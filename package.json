@@ -1,0 +1,13 @@
+{
+  "name": "my-agent-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:server": "cd packages/server && pnpm run dev",
+    "dev:frontend": "cd packages/frontend && pnpm run dev",
+    "dev": "concurrently \"pnpm run dev:server\" \"pnpm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.2"
+  }
+}
