@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@apollo/protobufjs'
+  - '@parcel/watcher'
   - '@prisma/client'
   - '@prisma/engines'
   - '@tailwindcss/oxide'

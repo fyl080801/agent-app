@@ -254,6 +254,348 @@ input TagCreateInput {
   posts: PostRelateToManyForCreateInput
 }
 
+type Agent {
+  id: ID!
+  name: String
+  description: String
+  type: String
+  config: JSON
+  isEnabled: Boolean
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input AgentWhereUniqueInput {
+  id: ID
+}
+
+input AgentWhereInput {
+  AND: [AgentWhereInput!]
+  OR: [AgentWhereInput!]
+  NOT: [AgentWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  type: StringNullableFilter
+  isEnabled: BooleanFilter
+  lastHeartbeat: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: StringNullableFilter
+}
+
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
+}
+
+input AgentOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  type: OrderDirection
+  isEnabled: OrderDirection
+  lastHeartbeat: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input AgentUpdateInput {
+  name: String
+  description: String
+  type: String
+  config: JSON
+  isEnabled: Boolean
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input AgentUpdateArgs {
+  where: AgentWhereUniqueInput!
+  data: AgentUpdateInput!
+}
+
+input AgentCreateInput {
+  name: String
+  description: String
+  type: String
+  config: JSON
+  isEnabled: Boolean
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type McpServer {
+  id: ID!
+  name: String
+  command: String
+  description: String
+  isEnabled: Boolean
+  timeout: Int
+  maxRetries: Int
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input McpServerWhereUniqueInput {
+  id: ID
+}
+
+input McpServerWhereInput {
+  AND: [McpServerWhereInput!]
+  OR: [McpServerWhereInput!]
+  NOT: [McpServerWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  command: StringFilter
+  description: StringFilter
+  isEnabled: BooleanFilter
+  timeout: IntNullableFilter
+  maxRetries: IntNullableFilter
+  lastHeartbeat: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input McpServerOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  command: OrderDirection
+  description: OrderDirection
+  isEnabled: OrderDirection
+  timeout: OrderDirection
+  maxRetries: OrderDirection
+  lastHeartbeat: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input McpServerUpdateInput {
+  name: String
+  command: String
+  description: String
+  isEnabled: Boolean
+  timeout: Int
+  maxRetries: Int
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input McpServerUpdateArgs {
+  where: McpServerWhereUniqueInput!
+  data: McpServerUpdateInput!
+}
+
+input McpServerCreateInput {
+  name: String
+  command: String
+  description: String
+  isEnabled: Boolean
+  timeout: Int
+  maxRetries: Int
+  lastHeartbeat: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type ComfyTool {
+  id: ID!
+  name: String
+  description: String
+  workflowDefinition: String
+  workflowParameters(where: ComfyToolParameterWhereInput! = {}, orderBy: [ComfyToolParameterOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ComfyToolParameterWhereUniqueInput): [ComfyToolParameter!]
+  workflowParametersCount(where: ComfyToolParameterWhereInput! = {}): Int
+  isEnabled: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ComfyToolWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input ComfyToolWhereInput {
+  AND: [ComfyToolWhereInput!]
+  OR: [ComfyToolWhereInput!]
+  NOT: [ComfyToolWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  workflowDefinition: StringFilter
+  workflowParameters: ComfyToolParameterManyRelationFilter
+  isEnabled: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input ComfyToolParameterManyRelationFilter {
+  every: ComfyToolParameterWhereInput
+  some: ComfyToolParameterWhereInput
+  none: ComfyToolParameterWhereInput
+}
+
+input ComfyToolOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  workflowDefinition: OrderDirection
+  isEnabled: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input ComfyToolUpdateInput {
+  name: String
+  description: String
+  workflowDefinition: String
+  workflowParameters: ComfyToolParameterRelateToManyForUpdateInput
+  isEnabled: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ComfyToolParameterRelateToManyForUpdateInput {
+  disconnect: [ComfyToolParameterWhereUniqueInput!]
+  set: [ComfyToolParameterWhereUniqueInput!]
+  create: [ComfyToolParameterCreateInput!]
+  connect: [ComfyToolParameterWhereUniqueInput!]
+}
+
+input ComfyToolUpdateArgs {
+  where: ComfyToolWhereUniqueInput!
+  data: ComfyToolUpdateInput!
+}
+
+input ComfyToolCreateInput {
+  name: String
+  description: String
+  workflowDefinition: String
+  workflowParameters: ComfyToolParameterRelateToManyForCreateInput
+  isEnabled: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ComfyToolParameterRelateToManyForCreateInput {
+  create: [ComfyToolParameterCreateInput!]
+  connect: [ComfyToolParameterWhereUniqueInput!]
+}
+
+type ComfyToolParameter {
+  id: ID!
+  name: String
+  description: String
+  dataType: String
+  prop: String
+  isRequired: Boolean
+  min: Int
+  max: Int
+  defaultValue: String
+  comfyTool: ComfyTool
+}
+
+input ComfyToolParameterWhereUniqueInput {
+  id: ID
+}
+
+input ComfyToolParameterWhereInput {
+  AND: [ComfyToolParameterWhereInput!]
+  OR: [ComfyToolParameterWhereInput!]
+  NOT: [ComfyToolParameterWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  dataType: StringFilter
+  prop: StringFilter
+  isRequired: BooleanFilter
+  min: IntNullableFilter
+  max: IntNullableFilter
+  defaultValue: StringFilter
+  comfyTool: ComfyToolWhereInput
+}
+
+input ComfyToolParameterOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  dataType: OrderDirection
+  prop: OrderDirection
+  isRequired: OrderDirection
+  min: OrderDirection
+  max: OrderDirection
+  defaultValue: OrderDirection
+}
+
+input ComfyToolParameterUpdateInput {
+  name: String
+  description: String
+  dataType: String
+  prop: String
+  isRequired: Boolean
+  min: Int
+  max: Int
+  defaultValue: String
+  comfyTool: ComfyToolRelateToOneForUpdateInput
+}
+
+input ComfyToolRelateToOneForUpdateInput {
+  create: ComfyToolCreateInput
+  connect: ComfyToolWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ComfyToolParameterUpdateArgs {
+  where: ComfyToolParameterWhereUniqueInput!
+  data: ComfyToolParameterUpdateInput!
+}
+
+input ComfyToolParameterCreateInput {
+  name: String
+  description: String
+  dataType: String
+  prop: String
+  isRequired: Boolean
+  min: Int
+  max: Int
+  defaultValue: String
+  comfyTool: ComfyToolRelateToOneForCreateInput
+}
+
+input ComfyToolRelateToOneForCreateInput {
+  create: ComfyToolCreateInput
+  connect: ComfyToolWhereUniqueInput
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -278,6 +620,30 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  createAgent(data: AgentCreateInput!): Agent
+  createAgents(data: [AgentCreateInput!]!): [Agent]
+  updateAgent(where: AgentWhereUniqueInput!, data: AgentUpdateInput!): Agent
+  updateAgents(data: [AgentUpdateArgs!]!): [Agent]
+  deleteAgent(where: AgentWhereUniqueInput!): Agent
+  deleteAgents(where: [AgentWhereUniqueInput!]!): [Agent]
+  createMcpServer(data: McpServerCreateInput!): McpServer
+  createMcpServers(data: [McpServerCreateInput!]!): [McpServer]
+  updateMcpServer(where: McpServerWhereUniqueInput!, data: McpServerUpdateInput!): McpServer
+  updateMcpServers(data: [McpServerUpdateArgs!]!): [McpServer]
+  deleteMcpServer(where: McpServerWhereUniqueInput!): McpServer
+  deleteMcpServers(where: [McpServerWhereUniqueInput!]!): [McpServer]
+  createComfyTool(data: ComfyToolCreateInput!): ComfyTool
+  createComfyTools(data: [ComfyToolCreateInput!]!): [ComfyTool]
+  updateComfyTool(where: ComfyToolWhereUniqueInput!, data: ComfyToolUpdateInput!): ComfyTool
+  updateComfyTools(data: [ComfyToolUpdateArgs!]!): [ComfyTool]
+  deleteComfyTool(where: ComfyToolWhereUniqueInput!): ComfyTool
+  deleteComfyTools(where: [ComfyToolWhereUniqueInput!]!): [ComfyTool]
+  createComfyToolParameter(data: ComfyToolParameterCreateInput!): ComfyToolParameter
+  createComfyToolParameters(data: [ComfyToolParameterCreateInput!]!): [ComfyToolParameter]
+  updateComfyToolParameter(where: ComfyToolParameterWhereUniqueInput!, data: ComfyToolParameterUpdateInput!): ComfyToolParameter
+  updateComfyToolParameters(data: [ComfyToolParameterUpdateArgs!]!): [ComfyToolParameter]
+  deleteComfyToolParameter(where: ComfyToolParameterWhereUniqueInput!): ComfyToolParameter
+  deleteComfyToolParameters(where: [ComfyToolParameterWhereUniqueInput!]!): [ComfyToolParameter]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -310,6 +676,18 @@ type Query {
   tag(where: TagWhereUniqueInput!): Tag
   tags(where: TagWhereInput! = {}, orderBy: [TagOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TagWhereUniqueInput): [Tag!]
   tagsCount(where: TagWhereInput! = {}): Int
+  agent(where: AgentWhereUniqueInput!): Agent
+  agents(where: AgentWhereInput! = {}, orderBy: [AgentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AgentWhereUniqueInput): [Agent!]
+  agentsCount(where: AgentWhereInput! = {}): Int
+  mcpServer(where: McpServerWhereUniqueInput!): McpServer
+  mcpServers(where: McpServerWhereInput! = {}, orderBy: [McpServerOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: McpServerWhereUniqueInput): [McpServer!]
+  mcpServersCount(where: McpServerWhereInput! = {}): Int
+  comfyTool(where: ComfyToolWhereUniqueInput!): ComfyTool
+  comfyTools(where: ComfyToolWhereInput! = {}, orderBy: [ComfyToolOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ComfyToolWhereUniqueInput): [ComfyTool!]
+  comfyToolsCount(where: ComfyToolWhereInput! = {}): Int
+  comfyToolParameter(where: ComfyToolParameterWhereUniqueInput!): ComfyToolParameter
+  comfyToolParameters(where: ComfyToolParameterWhereInput! = {}, orderBy: [ComfyToolParameterOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ComfyToolParameterWhereUniqueInput): [ComfyToolParameter!]
+  comfyToolParametersCount(where: ComfyToolParameterWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

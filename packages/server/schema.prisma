@@ -37,3 +37,55 @@ model Tag {
   name  String @default("")
   posts Post[] @relation("Post_tags")
 }
+
+model Agent {
+  id            String    @id @default(cuid())
+  name          String    @default("")
+  description   String    @default("")
+  type          String?   @default("comfyui")
+  config        String?
+  isEnabled     Boolean   @default(true)
+  lastHeartbeat DateTime?
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @default(now())
+}
+
+model McpServer {
+  id            String    @id @default(cuid())
+  name          String    @default("")
+  command       String    @default("")
+  description   String    @default("")
+  isEnabled     Boolean   @default(true)
+  timeout       Int?      @default(30000)
+  maxRetries    Int?      @default(3)
+  lastHeartbeat DateTime?
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @default(now())
+}
+
+model ComfyTool {
+  id                 String               @id @default(cuid())
+  name               String               @unique @default("")
+  description        String               @default("")
+  workflowDefinition String               @default("")
+  workflowParameters ComfyToolParameter[] @relation("ComfyToolParameter_comfyTool")
+  isEnabled          Boolean              @default(true)
+  createdAt          DateTime?            @default(now())
+  updatedAt          DateTime?            @default(now())
+}
+
+model ComfyToolParameter {
+  id           String     @id @default(cuid())
+  name         String     @default("")
+  description  String     @default("")
+  dataType     String     @default("string")
+  prop         String     @default("")
+  isRequired   Boolean    @default(false)
+  min          Int?
+  max          Int?
+  defaultValue String     @default("")
+  comfyTool    ComfyTool? @relation("ComfyToolParameter_comfyTool", fields: [comfyToolId], references: [id])
+  comfyToolId  String?    @map("comfyTool")
+
+  @@index([comfyToolId])
+}
