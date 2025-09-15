@@ -72,9 +72,29 @@ export const ComfyTool = list({
         displayMode: "cards",
         cardFields: ["name", "description", "dataType", "prop", "isRequired"],
         inlineCreate: {
-          fields: ["name", "description", "dataType", "prop", "isRequired"]
+          fields: [
+            "name",
+            "description",
+            "dataType",
+            "prop",
+            "isRequired",
+            "min",
+            "max",
+            "defaultValue"
+          ]
         },
-        inlineEdit: { fields: ["name", "description", "prop", "isRequired"] },
+        inlineEdit: {
+          fields: [
+            "name",
+            "description",
+            "dataType",
+            "prop",
+            "isRequired",
+            "min",
+            "max",
+            "defaultValue"
+          ]
+        },
         linkToItem: true,
         inlineConnect: true
       }

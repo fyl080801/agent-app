@@ -1,18 +1,8 @@
-import z from "zod"
-import { useFastMcp } from "./server"
-import { randomUUID } from "crypto"
-import prompt from "./prompt"
-import { jsonTryParse } from "../utils"
+import { jsonTryParse } from "../../utils"
 import { WebSocket } from "ws"
 import axios from "axios"
-import { uploadToS3 } from "./s3"
-import { COMFYUI_HOST } from "../envs"
 
-// Validation for required environment variables
-if (!COMFYUI_HOST) {
-  throw new Error("COMFYUI_HOST environment variable is required")
-}
-
+// ComfyUI WebSocket implementation (simplified version of the one in generate.ts)
 type ComfyuiWebsocketOptions = {
   host: string
   clientId: string
@@ -30,6 +20,10 @@ type ComfyuiEvents =
 
 type ComfyuiEventHandler = (event: Event & { data?: any }) => void
 
+interface ComfyWsParams {
+  prompt: { [key: string]: any }
+}
+
 interface ComfyuiExecutionResult {
   node: string
   display_node: string
@@ -40,13 +34,6 @@ interface ComfyuiExecutionResult {
       type: string
     }>
   }
-  prompt_id: string
-}
-
-interface ComfyuiProgressData {
-  value: number
-  max: number
-  node: string
   prompt_id: string
 }
 
@@ -66,7 +53,7 @@ class ComfyuiWebsocketError extends Error {
   }
 }
 
-class ComfyuiWebsocket {
+export class ComfyuiWebsocket {
   private websocket?: WebSocket | null = null
   private host: string
   private clientId: string
@@ -76,16 +63,16 @@ class ComfyuiWebsocket {
 
   private events: EventTarget = new EventTarget()
 
-  private async executeGen(params: any): Promise<void> {
+  private async executeGen(prompt: any): Promise<void> {
     try {
       const response = await axios.post(
         `http://${this.host}/prompt`,
         {
           client_id: this.clientId,
-          prompt: prompt(params)
+          prompt: prompt
         },
         {
-          timeout: 30000 // 30 second timeout for API call
+          timeout: 30000
         }
       )
 
@@ -129,7 +116,7 @@ class ComfyuiWebsocket {
     this.clientId = clientId
   }
 
-  async open(params: any): Promise<ComfyuiExecutionResult> {
+  async open(params: ComfyWsParams): Promise<ComfyuiExecutionResult> {
     if (this.isClosed) {
       throw new ComfyuiWebsocketError(
         "WebSocket is already closed",
@@ -172,7 +159,7 @@ class ComfyuiWebsocket {
           }
         }, 1000)
 
-        this.executeGen(params).catch(reject)
+        this.executeGen(params?.prompt).catch(reject)
       })
 
       this.websocket.addEventListener("message", ({ data }) => {
@@ -289,174 +276,3 @@ class ComfyuiWebsocket {
     this.events.removeEventListener(event, handler)
   }
 }
-
-useFastMcp((server, context) => {
-  server.addTool({
-    name: "comfyui_generate",
-    description: "Generate images using ComfyUI",
-    parameters: z.object({
-      prompt: z
-        .string()
-        .min(1)
-        .describe("Prompt for image generation, must be in English"),
-      negative_prompt: z
-        .string()
-        .optional()
-        .describe(
-          "Negative prompt to avoid certain elements, must be in English"
-        ),
-      width: z
-        .number()
-        .min(1)
-        .max(1024)
-        .optional()
-        .describe("Image width (max 1024)"),
-      height: z
-        .number()
-        .min(1)
-        .max(1024)
-        .optional()
-        .describe("Image height (max 1024)"),
-      steps: z
-        .number()
-        .min(1)
-        .max(100)
-        .optional()
-        .describe("Number of generation steps"),
-      cfg_scale: z
-        .number()
-        .min(1)
-        .max(30)
-        .optional()
-        .describe("CFG scale for generation")
-    }),
-    execute: async (params, context) => {
-      const clientId = randomUUID()
-
-      // Validate and constrain dimensions
-      const constrainedParams = {
-        ...params,
-        width: params.width
-          ? Math.min(Math.max(1, params.width), 1024)
-          : undefined,
-        height: params.height
-          ? Math.min(Math.max(1, params.height), 1024)
-          : undefined
-      }
-
-      context.log.info(`Generating image with prompt: "${params.prompt}"`, {
-        width: params.width,
-        height: params.height,
-        steps: params.steps,
-        cfg_scale: params.cfg_scale
-      })
-
-      const ws = new ComfyuiWebsocket({
-        host: COMFYUI_HOST,
-        clientId,
-        timeout: 10 * 60 * 1000 // 10 minute timeout
-      })
-
-      // Progress tracking
-      let lastProgressReport = 0
-      const progressHandler = ({ data }: Event & { data?: any }) => {
-        try {
-          const progressData = data?.data as ComfyuiProgressData
-          if (
-            progressData?.value !== undefined &&
-            progressData?.max !== undefined
-          ) {
-            const currentProgress = progressData.value
-            const totalProgress = progressData.max
-
-            // Throttle progress updates to avoid spam
-            if (currentProgress > lastProgressReport) {
-              context.reportProgress({
-                progress: currentProgress,
-                total: totalProgress
-              })
-              lastProgressReport = currentProgress
-            }
-          }
-        } catch (error) {
-          context.log.error(`Progress update error: ${error}`)
-        }
-      }
-
-      ws.on("progress", progressHandler)
-
-      try {
-        const result = await ws.open(constrainedParams)
-
-        if (!result?.output?.images?.length) {
-          throw new Error("No images returned from ComfyUI")
-        }
-
-        context.log.info(`Generated ${result.output.images.length} image(s)`)
-
-        const resources = []
-        for (const [index, image] of result.output.images.entries()) {
-          try {
-            context.reportProgress({
-              progress: index + 1,
-              total: result.output.images.length
-            })
-
-            const imageUrl = `http://${COMFYUI_HOST}/view?filename=${encodeURIComponent(
-              image.filename
-            )}&subfolder=${encodeURIComponent(
-              image.subfolder || ""
-            )}&type=${encodeURIComponent(image.type || "output")}`
-
-            const imageResponse = await axios.get(imageUrl, {
-              responseType: "arraybuffer",
-              timeout: 30000 // 30 second timeout
-            })
-
-            if (imageResponse.status !== 200) {
-              throw new Error(
-                `Failed to download image: ${imageResponse.status}`
-              )
-            }
-
-            const s3Url = await uploadToS3(image.filename, imageResponse.data)
-
-            resources.push(s3Url)
-
-            await context.streamContent({
-              type: "resource",
-              resource: {
-                uri: s3Url,
-                mimeType: "image/png"
-              }
-            })
-          } catch (error) {
-            context.log.error(`Error processing image ${index + 1}: ${error}`)
-            // Continue with other images if one fails
-          }
-        }
-
-        if (resources.length === 0) {
-          throw new Error("Failed to process any images")
-        }
-
-        context.log.info(`Successfully processed ${resources.length} image(s)`)
-
-        return {
-          content: resources.map((item) => ({
-            type: "resource",
-            resource: {
-              text: "Generated image",
-              uri: item
-            }
-          }))
-        }
-      } catch (error) {
-        context.log.error(`Generation error: ${error}`)
-        throw error
-      } finally {
-        ws.close()
-      }
-    }
-  })
-})

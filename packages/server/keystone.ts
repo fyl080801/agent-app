@@ -1,3 +1,4 @@
+import "dotenv/config"
 import { config } from "@keystone-6/core"
 import { type TypeInfo } from ".keystone/types"
 import {

@@ -8,7 +8,7 @@ import {
   S3_PUBLIC_DOMAIN,
   S3_REGION,
   S3_SECRET_ACCESS_KEY
-} from "../envs"
+} from "../../envs"
 
 const s3Client = new S3Client({
   endpoint: S3_ENDPOINT,

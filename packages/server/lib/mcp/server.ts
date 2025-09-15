@@ -157,7 +157,7 @@ export const startFastMcp = async (
 
   await Promise.all(
     fastsetups.map(async (setup) => {
-      return Promise.resolve(setup(server, context))
+      await Promise.resolve(setup(server, context))
     })
   )
 
