@@ -1,11 +1,11 @@
-import { list } from "@keystone-6/core"
-import { allowAll } from "@keystone-6/core/access"
+import { list } from '@keystone-6/core'
+import { allowAll } from '@keystone-6/core/access'
 import {
   text,
   relationship,
   password,
-  timestamp
-} from "@keystone-6/core/fields"
+  timestamp,
+} from '@keystone-6/core/fields'
 
 export const User = list({
   // WARNING
@@ -24,18 +24,18 @@ export const User = list({
       validation: { isRequired: true },
       // by adding isIndexed: 'unique', we're saying that no user can have the same
       // email as another user - this may or may not be a good idea for your project
-      isIndexed: "unique"
+      isIndexed: 'unique',
     }),
 
     password: password({ validation: { isRequired: true } }),
 
     // we can use this field to see what Posts this User has authored
     //   more on that in the Post list below
-    posts: relationship({ ref: "Post.author", many: true }),
+    posts: relationship({ ref: 'Post.author', many: true }),
 
     createdAt: timestamp({
       // this sets the timestamp to Date.now() when the user is first created
-      defaultValue: { kind: "now" }
-    })
-  }
+      defaultValue: { kind: 'now' },
+    }),
+  },
 })

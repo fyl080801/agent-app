@@ -1,10 +1,10 @@
-import { KeystoneContext, MaybePromise } from "@keystone-6/core/types"
-import express from "express"
-import { TypeInfo } from ".keystone/types"
+import { KeystoneContext, MaybePromise } from '@keystone-6/core/types'
+import express from 'express'
+import { TypeInfo } from '.keystone/types'
 
 type AppRouterSetup = (
   app: express.Express,
-  context: KeystoneContext<TypeInfo>
+  context: KeystoneContext<TypeInfo>,
 ) => void
 
 const appSetups: AppRouterSetup[] = []
@@ -15,11 +15,11 @@ export const useAppRouter = (setup: AppRouterSetup) => {
 
 export const extendExpressApp: (
   app: express.Express,
-  context: KeystoneContext<TypeInfo>
+  context: KeystoneContext<TypeInfo>,
 ) => MaybePromise<void> = (app, context) => {
   app.use(express.json())
 
-  appSetups.forEach((setup) => {
+  appSetups.forEach(setup => {
     setup(app, context)
   })
 }

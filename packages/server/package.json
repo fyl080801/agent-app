@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "keystone dev",
     "start": "keystone start",
-    "build": "keystone build"
+    "build": "keystone build",
+    "db:migrate": "keystone prisma migrate dev",
+    "db:deploy": "keystone prisma migrate deploy"
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.37",
@@ -14,6 +16,7 @@
     "@keystone-6/auth": "^8.1.0",
     "@keystone-6/core": "^6.5.1",
     "@keystone-6/fields-document": "^9.1.1",
+    "@keystone-ui/core": "^5.0.2",
     "@prisma/client": "5.22.0",
     "axios": "^1.12.0",
     "body-parser": "^2.2.0",
@@ -29,10 +32,24 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@ant-design/cssinjs": "^1.24.0",
+    "@tailwindcss/postcss": "^4.1.13",
     "@types/body-parser": "^1.19.6",
     "@types/express": "^4",
     "@types/lodash-es": "^4.17.12",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "@types/ws": "^8.18.1",
-    "prisma": "5.22.0"
+    "antd": "^5.27.3",
+    "autoprefixer": "^10.4.21",
+    "graphql": "^16.11.0",
+    "postcss": "^8.5.6",
+    "prisma": "5.22.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "sass": "^1.92.1",
+    "tailwindcss": "^4.1.13",
+    "typed-scss-modules": "^8.1.1",
+    "typescript-plugin-css-modules": "^5.2.0"
   }
 }

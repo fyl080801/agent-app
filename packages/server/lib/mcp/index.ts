@@ -1,3 +1,3 @@
-import "./comfyui/index"
+import './comfyui/index'
 
-export * from "./server"
+export * from './server'

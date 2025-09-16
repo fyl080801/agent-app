@@ -1,6 +1,6 @@
 // import { createProxyMiddleware } from "http-proxy-middleware"
-import { useAppRouter } from "../app"
-import { startFastMcp } from "../mcp"
+import { useAppRouter } from '../app'
+import { startFastMcp } from '../mcp'
 // import { MCP_PORT } from "../envs"
 
 useAppRouter((app, context) => {
@@ -14,7 +14,7 @@ useAppRouter((app, context) => {
   //   })
   // )
 
-  app.put("/api/mcp/restart", async (req, res) => {
+  app.put('/api/mcp/restart', async (req, res) => {
     await startFastMcp(context)
     res.send({})
   })

@@ -1,5 +1,5 @@
-import { list } from "@keystone-6/core"
-import { allowAll } from "@keystone-6/core/access"
+import { list } from '@keystone-6/core'
+import { allowAll } from '@keystone-6/core/access'
 import {
   text,
   relationship,
@@ -7,8 +7,8 @@ import {
   checkbox,
   timestamp,
   select,
-  json
-} from "@keystone-6/core/fields"
+  json,
+} from '@keystone-6/core/fields'
 
 export const Agent = list({
   access: allowAll,
@@ -17,16 +17,16 @@ export const Agent = list({
     description: text(),
     type: select({
       options: [
-        { label: "ComfyUI", value: "comfyui" },
-        { label: "FastMCP", value: "fastmcp" },
-        { label: "Custom", value: "custom" }
+        { label: 'ComfyUI', value: 'comfyui' },
+        { label: 'FastMCP', value: 'fastmcp' },
+        { label: 'Custom', value: 'custom' },
       ],
-      defaultValue: "comfyui"
+      defaultValue: 'comfyui',
     }),
     config: json(),
     isEnabled: checkbox({ defaultValue: true }),
     lastHeartbeat: timestamp(),
-    createdAt: timestamp({ defaultValue: { kind: "now" } }),
-    updatedAt: timestamp({ defaultValue: { kind: "now" } })
-  }
+    createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+    updatedAt: timestamp({ defaultValue: { kind: 'now' } }),
+  },
 })

@@ -1,6 +1,7 @@
-import { jsonTryParse } from "../../utils"
-import { WebSocket } from "ws"
-import axios from "axios"
+import { jsonTryParse } from '../../utils'
+import { WebSocket } from 'ws'
+import axios from 'axios'
+import { COMFYUI_HTTP_PROTOCOL, COMFYUI_WS_PROTOCOL } from '../../envs'
 
 // ComfyUI WebSocket implementation (simplified version of the one in generate.ts)
 type ComfyuiWebsocketOptions = {
@@ -10,13 +11,13 @@ type ComfyuiWebsocketOptions = {
 }
 
 type ComfyuiEvents =
-  | "status"
-  | "execution_start"
-  | "execution_cached"
-  | "progress"
-  | "executing"
-  | "executed"
-  | "error"
+  | 'status'
+  | 'execution_start'
+  | 'execution_cached'
+  | 'progress'
+  | 'executing'
+  | 'executed'
+  | 'error'
 
 type ComfyuiEventHandler = (event: Event & { data?: any }) => void
 
@@ -47,9 +48,12 @@ class ComfyuiEvent extends Event {
 }
 
 class ComfyuiWebsocketError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
     super(message)
-    this.name = "ComfyuiWebsocketError"
+    this.name = 'ComfyuiWebsocketError'
   }
 }
 
@@ -66,34 +70,34 @@ export class ComfyuiWebsocket {
   private async executeGen(prompt: any): Promise<void> {
     try {
       const response = await axios.post(
-        `http://${this.host}/prompt`,
+        `${COMFYUI_HTTP_PROTOCOL}://${this.host}/prompt`,
         {
           client_id: this.clientId,
-          prompt: prompt
+          prompt: prompt,
         },
         {
-          timeout: 30000
-        }
+          timeout: 30000,
+        },
       )
 
       if (response.status !== 200) {
         throw new ComfyuiWebsocketError(
           `ComfyUI API call failed with status ${response.status}`,
-          "API_ERROR"
+          'API_ERROR',
         )
       }
 
       if (!response.data?.prompt_id) {
         throw new ComfyuiWebsocketError(
-          "Invalid response from ComfyUI API",
-          "INVALID_RESPONSE"
+          'Invalid response from ComfyUI API',
+          'INVALID_RESPONSE',
         )
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new ComfyuiWebsocketError(
           `ComfyUI API call failed: ${error.message}`,
-          "API_CALL_FAILED"
+          'API_CALL_FAILED',
         )
       }
       throw error
@@ -104,11 +108,11 @@ export class ComfyuiWebsocket {
     const { host, clientId, timeout = 8 * 60 * 1000 } = options
 
     if (!host)
-      throw new ComfyuiWebsocketError("Host is required", "MISSING_HOST")
+      throw new ComfyuiWebsocketError('Host is required', 'MISSING_HOST')
     if (!clientId)
       throw new ComfyuiWebsocketError(
-        "Client ID is required",
-        "MISSING_CLIENT_ID"
+        'Client ID is required',
+        'MISSING_CLIENT_ID',
       )
 
     this.host = host
@@ -119,8 +123,8 @@ export class ComfyuiWebsocket {
   async open(params: ComfyWsParams): Promise<ComfyuiExecutionResult> {
     if (this.isClosed) {
       throw new ComfyuiWebsocketError(
-        "WebSocket is already closed",
-        "ALREADY_CLOSED"
+        'WebSocket is already closed',
+        'ALREADY_CLOSED',
       )
     }
 
@@ -129,16 +133,16 @@ export class ComfyuiWebsocket {
 
     // Validate parameters
     if (!params?.prompt) {
-      reject(new ComfyuiWebsocketError("Prompt is required", "MISSING_PROMPT"))
+      reject(new ComfyuiWebsocketError('Prompt is required', 'MISSING_PROMPT'))
       return promise
     }
 
     try {
       this.websocket = new WebSocket(
-        `ws://${this.host}/ws?clientId=${this.clientId}`
+        `${COMFYUI_WS_PROTOCOL}://${this.host}/ws?clientId=${this.clientId}`,
       )
 
-      this.websocket.addEventListener("open", () => {
+      this.websocket.addEventListener('open', () => {
         if (this.isClosed) return
 
         const start = Date.now()
@@ -153,8 +157,8 @@ export class ComfyuiWebsocket {
             reject(
               new ComfyuiWebsocketError(
                 `ComfyUI timeout after ${this.timeout}ms`,
-                "TIMEOUT"
-              )
+                'TIMEOUT',
+              ),
             )
           }
         }, 1000)
@@ -162,7 +166,7 @@ export class ComfyuiWebsocket {
         this.executeGen(params?.prompt).catch(reject)
       })
 
-      this.websocket.addEventListener("message", ({ data }) => {
+      this.websocket.addEventListener('message', ({ data }) => {
         if (this.isClosed) return
 
         const eventData = jsonTryParse(data?.toString())
@@ -170,65 +174,65 @@ export class ComfyuiWebsocket {
         if (!eventData?.type) return
 
         switch (eventData.type) {
-          case "status":
-          case "execution_start":
-          case "execution_cached":
-          case "progress":
-          case "executing":
+          case 'status':
+          case 'execution_start':
+          case 'execution_cached':
+          case 'progress':
+          case 'executing':
             this.events.dispatchEvent(
-              new ComfyuiEvent(eventData.type, { data: eventData })
+              new ComfyuiEvent(eventData.type, { data: eventData }),
             )
             break
 
-          case "executed":
+          case 'executed':
             this.close()
             if (eventData.data) {
               resolve(eventData.data as ComfyuiExecutionResult)
             } else {
               reject(
                 new ComfyuiWebsocketError(
-                  "Invalid executed event data",
-                  "INVALID_EXECUTED_DATA"
-                )
+                  'Invalid executed event data',
+                  'INVALID_EXECUTED_DATA',
+                ),
               )
             }
             break
 
-          case "execution_error":
-          case "error":
+          case 'execution_error':
+          case 'error':
             this.close()
             const errorMessage =
               eventData.data?.error?.message ||
               eventData.message ||
-              "Unknown ComfyUI error"
+              'Unknown ComfyUI error'
             reject(
               new ComfyuiWebsocketError(
                 `ComfyUI error: ${errorMessage}`,
-                "EXECUTION_ERROR"
-              )
+                'EXECUTION_ERROR',
+              ),
             )
             break
         }
       })
 
-      this.websocket.addEventListener("error", (error) => {
+      this.websocket.addEventListener('error', error => {
         this.close()
         reject(
           new ComfyuiWebsocketError(
             `WebSocket error: ${error.message}`,
-            "WEBSOCKET_ERROR"
-          )
+            'WEBSOCKET_ERROR',
+          ),
         )
       })
 
-      this.websocket.addEventListener("close", () => {
+      this.websocket.addEventListener('close', () => {
         if (!this.isClosed) {
           this.close()
           reject(
             new ComfyuiWebsocketError(
-              "WebSocket connection closed unexpectedly",
-              "UNEXPECTED_CLOSE"
-            )
+              'WebSocket connection closed unexpectedly',
+              'UNEXPECTED_CLOSE',
+            ),
           )
         }
       })
@@ -240,8 +244,8 @@ export class ComfyuiWebsocket {
         reject(
           new ComfyuiWebsocketError(
             `Failed to initialize WebSocket: ${error}`,
-            "INIT_FAILED"
-          )
+            'INIT_FAILED',
+          ),
         )
       }
     }

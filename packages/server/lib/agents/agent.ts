@@ -1,20 +1,20 @@
-import OpenAI from "openai"
-import { ChatCompletionMessageParam } from "openai/resources"
+import OpenAI from 'openai'
+import { ChatCompletionMessageParam } from 'openai/resources'
 import {
   EventSchemas,
   EventType,
   RunStartedEvent,
   TextMessageStartEvent,
   RunFinishedEvent,
-  TextMessageContentEvent
-} from "@ag-ui/core"
-import { EventEncoder } from "@ag-ui/encoder"
-import { OPENAI_API_KEY } from "../envs"
+  TextMessageContentEvent,
+} from '@ag-ui/core'
+import { EventEncoder } from '@ag-ui/encoder'
+import { OPENAI_API_KEY } from '../envs'
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  baseURL: "http://127.0.0.1:1234/v1",
-  apiKey: OPENAI_API_KEY // Make sure to set your API key in environment variables
+  baseURL: 'http://127.0.0.1:1234/v1',
+  apiKey: OPENAI_API_KEY, // Make sure to set your API key in environment variables
 })
 
 /**
@@ -36,32 +36,32 @@ class OpenAIService {
    */
   async chatCompletion(
     messages: ChatCompletionMessageParam[],
-    model: string = "gpt-4-turbo",
-    temperature: number = 0.7
+    model: string = 'gpt-4-turbo',
+    temperature: number = 0.7,
   ): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
         model,
         messages,
         temperature,
-        max_tokens: 1000
+        max_tokens: 1000,
       })
 
       // Debug log to see the actual response structure
-      console.log("API Response:", JSON.stringify(response, null, 2))
+      console.log('API Response:', JSON.stringify(response, null, 2))
 
       const content = response.choices?.[0]?.message?.content
       if (!content) {
-        throw new Error("No content received from OpenAI API")
+        throw new Error('No content received from OpenAI API')
       }
 
       return content
     } catch (error) {
-      console.error("OpenAI API Error:", error)
+      console.error('OpenAI API Error:', error)
       throw new Error(
         `Failed to get response from OpenAI: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
       )
     }
   }
@@ -75,29 +75,29 @@ class OpenAIService {
    */
   async generateText(
     prompt: string,
-    model: string = "gpt-4-turbo",
-    maxTokens: number = 1000
+    model: string = 'gpt-4-turbo',
+    maxTokens: number = 1000,
   ): Promise<string> {
     try {
       const response = await this.client.completions.create({
         model,
         prompt,
         max_tokens: maxTokens,
-        temperature: 0.7
+        temperature: 0.7,
       })
 
       const text = response.choices[0]?.text
       if (!text) {
-        throw new Error("No text received from OpenAI API")
+        throw new Error('No text received from OpenAI API')
       }
 
       return text
     } catch (error) {
-      console.error("OpenAI API Error:", error)
+      console.error('OpenAI API Error:', error)
       throw new Error(
         `Failed to generate text from OpenAI: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
       )
     }
   }
@@ -120,9 +120,9 @@ class OpenAIService {
    */
   async streamChatCompletion(
     messages: ChatCompletionMessageParam[],
-    model: string = "gpt-4-turbo",
+    model: string = 'gpt-4-turbo',
     temperature: number = 0.7,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
   ): Promise<string> {
     try {
       const stream = await this.client.chat.completions.create({
@@ -130,10 +130,10 @@ class OpenAIService {
         messages,
         temperature,
         max_tokens: 1000,
-        stream: true
+        stream: true,
       })
 
-      let fullContent = ""
+      let fullContent = ''
       const messageId = this.generateRandomMessageId()
 
       // must be from request
@@ -149,9 +149,9 @@ class OpenAIService {
           EventSchemas.parse({
             type: EventType.RUN_STARTED,
             threadId,
-            runId
-          } as RunStartedEvent)
-        )
+            runId,
+          } as RunStartedEvent),
+        ),
       )
 
       onSubscribe(
@@ -159,13 +159,13 @@ class OpenAIService {
           EventSchemas.parse({
             type: EventType.TEXT_MESSAGE_START,
             messageId: messageId,
-            role: "assistant"
-          } as TextMessageStartEvent)
-        )
+            role: 'assistant',
+          } as TextMessageStartEvent),
+        ),
       )
 
       for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || ""
+        const content = chunk.choices[0]?.delta?.content || ''
         fullContent += content
 
         // Call the onChunk callback if provided
@@ -175,9 +175,9 @@ class OpenAIService {
               EventSchemas.parse({
                 type: EventType.TEXT_MESSAGE_CONTENT,
                 messageId: messageId,
-                delta: content
-              } as TextMessageContentEvent)
-            )
+                delta: content,
+              } as TextMessageContentEvent),
+            ),
           )
       }
 
@@ -185,9 +185,9 @@ class OpenAIService {
         encoder.encode(
           EventSchemas.parse({
             type: EventType.TEXT_MESSAGE_END,
-            messageId: messageId
-          })
-        )
+            messageId: messageId,
+          }),
+        ),
       )
 
       onSubscribe(
@@ -195,18 +195,18 @@ class OpenAIService {
           EventSchemas.parse({
             type: EventType.RUN_FINISHED,
             threadId,
-            runId
-          } as RunFinishedEvent)
-        )
+            runId,
+          } as RunFinishedEvent),
+        ),
       )
 
       return fullContent
     } catch (error) {
-      console.error("OpenAI Streaming API Error:", error)
+      console.error('OpenAI Streaming API Error:', error)
       throw new Error(
         `Failed to stream response from OpenAI: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
       )
     }
   }
@@ -221,9 +221,9 @@ class OpenAIService {
    */
   async streamTextGeneration(
     prompt: string,
-    model: string = "gpt-4-turbo",
+    model: string = 'gpt-4-turbo',
     maxTokens: number = 1000,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
   ): Promise<string> {
     try {
       const stream = await this.client.completions.create({
@@ -231,13 +231,13 @@ class OpenAIService {
         prompt,
         max_tokens: maxTokens,
         temperature: 0.7,
-        stream: true
+        stream: true,
       })
 
-      let fullText = ""
+      let fullText = ''
 
       for await (const chunk of stream) {
-        const text = chunk.choices[0]?.text || ""
+        const text = chunk.choices[0]?.text || ''
         fullText += text
 
         // Call the onChunk callback if provided
@@ -248,11 +248,11 @@ class OpenAIService {
 
       return fullText
     } catch (error) {
-      console.error("OpenAI Streaming API Error:", error)
+      console.error('OpenAI Streaming API Error:', error)
       throw new Error(
         `Failed to stream text generation from OpenAI: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
       )
     }
   }

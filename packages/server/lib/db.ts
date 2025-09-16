@@ -1,10 +1,10 @@
 import {
   DatabaseProvider,
   IdFieldConfig,
-  KeystoneContext
-} from "@keystone-6/core/types"
-import { TypeInfo } from ".keystone/types"
-import { DATABASE_PROVIDER, DATABASE_URL } from "./envs"
+  KeystoneContext,
+} from '@keystone-6/core/types'
+import { TypeInfo } from '.keystone/types'
+import { DATABASE_PROVIDER, DATABASE_URL } from './envs'
 
 type DbType = {
   provider: DatabaseProvider
@@ -21,5 +21,5 @@ type DbType = {
 
 export const db: DbType = {
   provider: DATABASE_PROVIDER,
-  url: DATABASE_URL
+  url: DATABASE_URL,
 }

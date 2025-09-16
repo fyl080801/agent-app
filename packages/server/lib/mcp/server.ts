@@ -1,23 +1,23 @@
-import { KeystoneContext } from "@keystone-6/core/types"
-import { FastMCP } from "fastmcp"
-import { type TypeInfo } from ".keystone/types"
-import { MCP_PORT } from "../envs"
-import { createServer } from "net"
-import { execSync } from "child_process"
+import { KeystoneContext } from '@keystone-6/core/types'
+import { FastMCP } from 'fastmcp'
+import { type TypeInfo } from '.keystone/types'
+import { MCP_PORT } from '../envs'
+import { createServer } from 'net'
+import { execSync } from 'child_process'
 
 const isPortAvailable = (port: number): Promise<boolean> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const server = createServer()
-    server.listen(port, "127.0.0.1", () => {
+    server.listen(port, '127.0.0.1', () => {
       // If we can listen, the port is available
       server.close(() => {
         resolve(true)
       })
     })
-    server.on("error", (err: any) => {
-      if (err.code === "EADDRINUSE") {
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
         resolve(false)
-      } else if (err.code === "EACCES") {
+      } else if (err.code === 'EACCES') {
         // Permission denied, port might be privileged
         resolve(false)
       } else {
@@ -31,17 +31,17 @@ const isPortAvailable = (port: number): Promise<boolean> => {
 const getPortProcessId = (port: number): string | null => {
   try {
     const command =
-      process.platform === "win32"
+      process.platform === 'win32'
         ? `netstat -ano | findstr :${port}`
         : `lsof -ti :${port}`
 
-    const result = execSync(command, { encoding: "utf8" }).trim()
+    const result = execSync(command, { encoding: 'utf8' }).trim()
 
-    if (process.platform === "win32") {
-      const lines = result.split("\n")
+    if (process.platform === 'win32') {
+      const lines = result.split('\n')
       for (const line of lines) {
         const parts = line.trim().split(/\s+/)
-        if (parts.length >= 5 && parts[1] === "LISTENING") {
+        if (parts.length >= 5 && parts[1] === 'LISTENING') {
           return parts[4]
         }
       }
@@ -56,10 +56,10 @@ const getPortProcessId = (port: number): string | null => {
 
 const killProcess = (pid: string): boolean => {
   try {
-    if (process.platform === "win32") {
-      execSync(`taskkill /PID ${pid} /F`, { stdio: "ignore" })
+    if (process.platform === 'win32') {
+      execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' })
     } else {
-      process.kill(parseInt(pid), "SIGKILL")
+      process.kill(parseInt(pid), 'SIGKILL')
     }
     return true
   } catch (error) {
@@ -70,14 +70,14 @@ const killProcess = (pid: string): boolean => {
 
 const waitForPortAvailable = async (
   port: number,
-  timeoutMs: number = 10000
+  timeoutMs: number = 10000,
 ): Promise<boolean> => {
   const startTime = Date.now()
   while (Date.now() - startTime < timeoutMs) {
     if (await isPortAvailable(port).catch(() => false)) {
       return true
     }
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100))
   }
   return false
 }
@@ -92,7 +92,7 @@ const ensurePortAvailable = async (port: number): Promise<boolean> => {
   const pid = getPortProcessId(port)
   if (pid) {
     console.log(
-      `Found process ${pid} occupying port ${port}, attempting to kill...`
+      `Found process ${pid} occupying port ${port}, attempting to kill...`,
     )
     if (killProcess(pid)) {
       console.log(`Successfully killed process ${pid}`)
@@ -117,7 +117,7 @@ const ensurePortAvailable = async (port: number): Promise<boolean> => {
 
 type FastMcpSetup = (
   server: FastMCP,
-  context: KeystoneContext<TypeInfo>
+  context: KeystoneContext<TypeInfo>,
 ) => void
 
 const fastsetups: FastMcpSetup[] = []
@@ -126,7 +126,7 @@ let isServerStarted = false
 
 export const startFastMcp = async (
   context: KeystoneContext<TypeInfo>,
-  port?: number
+  port?: number,
 ) => {
   const targetPort = Number(port || MCP_PORT)
 
@@ -135,7 +135,7 @@ export const startFastMcp = async (
 
   if (!isAvailable) {
     console.warn(
-      `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`
+      `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`,
     )
   } else {
     console.log(`Port ${targetPort} is available`)
@@ -143,30 +143,30 @@ export const startFastMcp = async (
 
   if (isServerStarted && serverInstance) {
     try {
-      console.log("mcp stoping")
+      console.log('mcp stoping')
       await serverInstance.stop()
     } catch (error) {
-      console.warn("Failed to stop previous MCP server:", error)
+      console.warn('Failed to stop previous MCP server:', error)
     }
   }
 
   const server = new FastMCP({
-    name: "ComfyUI",
-    version: "0.1.0"
+    name: 'ComfyUI',
+    version: '0.1.0',
   })
 
   await Promise.all(
-    fastsetups.map(async (setup) => {
+    fastsetups.map(async setup => {
       await Promise.resolve(setup(server, context))
-    })
+    }),
   )
 
   await server.start({
-    transportType: "httpStream",
+    transportType: 'httpStream',
     httpStream: {
       port: targetPort,
-      endpoint: "/mcp"
-    }
+      endpoint: '/mcp',
+    },
   })
 
   serverInstance = server

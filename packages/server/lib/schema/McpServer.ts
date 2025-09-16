@@ -1,12 +1,12 @@
-import { list } from "@keystone-6/core"
-import { allowAll } from "@keystone-6/core/access"
+import { list } from '@keystone-6/core'
+import { allowAll } from '@keystone-6/core/access'
 import {
   text,
   relationship,
   integer,
   checkbox,
   timestamp,
-} from "@keystone-6/core/fields"
+} from '@keystone-6/core/fields'
 
 export const McpServer = list({
   // WARNING
@@ -24,7 +24,7 @@ export const McpServer = list({
     timeout: integer({ defaultValue: 30000 }),
     maxRetries: integer({ defaultValue: 3 }),
     lastHeartbeat: timestamp(),
-    createdAt: timestamp({ defaultValue: { kind: "now" } }),
-    updatedAt: timestamp({ defaultValue: { kind: "now" } })
-  }
+    createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+    updatedAt: timestamp({ defaultValue: { kind: 'now' } }),
+  },
 })
