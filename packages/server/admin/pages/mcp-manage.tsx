@@ -12,7 +12,12 @@ import {
   Space,
   message,
   Typography,
+  Card,
+  List,
+  Popconfirm,
+  Divider,
 } from 'antd'
+import { ReloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { api } from '../lib/api'
 import styles from './mcp-manage.module.scss'
 import { gql, useApolloClient } from '@keystone-6/core/admin-ui/apollo'
@@ -57,18 +62,28 @@ export default () => {
   const loadTools = async () => {
     setLoading(true)
     try {
-      const query = 'ComfyTool'
-      const name = 'comfyTools'
-      const { data } = await client.query<{ comfyTools: ComfyTool[] }>({
+      const { data } = await client.query({
         query: gql`
-          query ${query}($take: Int, $skip: Int) {
-            ${name}(take: $take, skip: $skip) {
+          query (
+            $where: ComfyToolWhereInput
+            $take: Int!
+            $skip: Int!
+            $orderBy: [ComfyToolOrderByInput!]
+          ) {
+            items: comfyTools(
+              where: $where
+              take: $take
+              skip: $skip
+              orderBy: $orderBy
+            ) {
               id
               name
               description
               isEnabled
               createdAt
+              updatedAt
             }
+            count: comfyToolsCount(where: $where)
           }
         `,
         variables: {
@@ -76,7 +91,67 @@ export default () => {
           skip: 0,
         },
       })
-      setTools(data.comfyTools)
+
+      // create
+      // client.mutate({
+      //   mutation: gql`
+      //     mutation ($data: ComfyToolCreateInput!) {
+      //       item: createComfyTool(data: $data) {
+      //         id
+      //         label: name
+      //         __typename
+      //       }
+      //     }
+      //   `,
+      //   variables: {
+      //     data: {},
+      //   },
+      // })
+
+      // delete
+      // client.mutate({
+      //   mutation: gql`
+      //     mutation ($where: [ComfyToolWhereUniqueInput!]!) {
+      //       deleteComfyTools(where: $where) {
+      //         id
+      //         name
+      //         __typename
+      //       }
+      //     }
+      //   `,
+      //   variables: {
+      //     where: [{ id: '' }],
+      //   },
+      // })
+
+      // update
+      // client.mutate({
+      //   mutation: gql`
+      //     mutation ($data: ComfyToolUpdateInput!, $id: ID!) {
+      //       item: updateComfyTool(where: { id: $id }, data: $data) {
+      //         id
+      //         name
+      //         description
+      //         workflowDefinition
+      //         workflowParameters {
+      //           id
+      //           label: name
+      //           __typename
+      //         }
+      //         isEnabled
+      //         createdAt
+      //         updatedAt
+      //         __typename
+      //       }
+      //     }
+      //   `,
+      //   variables: {
+      //     id: '',
+      //     data: {},
+      //   },
+      // })
+
+      setTools(data.items)
     } catch (error) {
       console.log(error)
       message.error('加载工具列表失败')
@@ -94,6 +169,11 @@ export default () => {
     message.success('服务重启中...')
   }
 
+  const handleRefresh = () => {
+    loadTools()
+    message.success('刷新成功')
+  }
+
   const handleCreate = () => {
     setEditingTool(null)
     form.resetFields()
@@ -107,6 +187,7 @@ export default () => {
       description: tool.description,
       workflowDefinition: tool.workflowDefinition,
       isEnabled: tool.isEnabled,
+      workflowParameters: tool.workflowParameters || [],
     })
     setModalVisible(true)
   }
@@ -129,11 +210,42 @@ export default () => {
 
   const handleSubmit = async (values: any) => {
     try {
+      // 处理工作流参数
+      const workflowParameters = values.workflowParameters || []
+
       if (editingTool) {
-        await api.put(`/comfy-tools/${editingTool.id}`, values)
+        await api.put(`/comfy-tools/${editingTool.id}`, {
+          ...values,
+          workflowParameters: workflowParameters.map(
+            (param: ComfyToolParameter) => ({
+              name: param.name,
+              description: param.description,
+              dataType: param.dataType,
+              prop: param.prop,
+              isRequired: param.isRequired,
+              min: param.min,
+              max: param.max,
+              defaultValue: param.defaultValue,
+            }),
+          ),
+        })
         message.success('更新成功')
       } else {
-        await api.post('/comfy-tools', values)
+        await api.post('/comfy-tools', {
+          ...values,
+          workflowParameters: workflowParameters.map(
+            (param: ComfyToolParameter) => ({
+              name: param.name,
+              description: param.description,
+              dataType: param.dataType,
+              prop: param.prop,
+              isRequired: param.isRequired,
+              min: param.min,
+              max: param.max,
+              defaultValue: param.defaultValue,
+            }),
+          ),
+        })
         message.success('创建成功')
       }
       setModalVisible(false)
@@ -186,13 +298,14 @@ export default () => {
   return (
     <PageContainer header={<Heading type="h3">ComfyMCP管理</Heading>}>
       <div className={styles.container}>
-        <div className="mb-[16px]">
+        <div className="mb-[16px] flex justify-between items-center">
           <Space>
             <Button type="primary" onClick={handleCreate}>
               创建新工具
             </Button>
             <Button onClick={onRestart}>重启服务</Button>
           </Space>
+          <Button icon={<ReloadOutlined />} onClick={handleRefresh}></Button>
         </div>
 
         <Table
@@ -230,6 +343,81 @@ export default () => {
             >
               <TextArea rows={6} />
             </Form.Item>
+
+            <Divider orientation="left">参数配置</Divider>
+            <Form.List name="workflowParameters">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Space
+                      key={key}
+                      style={{ display: 'flex', marginBottom: 8 }}
+                      align="baseline"
+                    >
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'name']}
+                        rules={[{ required: true, message: '参数名称必填' }]}
+                      >
+                        <Input placeholder="参数名称" />
+                      </Form.Item>
+                      <Form.Item {...restField} name={[name, 'description']}>
+                        <Input placeholder="参数描述" />
+                      </Form.Item>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'dataType']}
+                        rules={[{ required: true, message: '数据类型必选' }]}
+                      >
+                        <Select style={{ width: 120 }} placeholder="数据类型">
+                          <Option value="string">字符串</Option>
+                          <Option value="number">数字</Option>
+                        </Select>
+                      </Form.Item>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'prop']}
+                        rules={[{ required: true, message: '属性名必填' }]}
+                      >
+                        <Input placeholder="属性名" />
+                      </Form.Item>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'isRequired']}
+                        valuePropName="checked"
+                      >
+                        <Switch
+                          checkedChildren="必填"
+                          unCheckedChildren="可选"
+                        />
+                      </Form.Item>
+                      <Form.Item {...restField} name={[name, 'min']}>
+                        <Input placeholder="最小值" type="number" />
+                      </Form.Item>
+                      <Form.Item {...restField} name={[name, 'max']}>
+                        <Input placeholder="最大值" type="number" />
+                      </Form.Item>
+                      <Form.Item {...restField} name={[name, 'defaultValue']}>
+                        <Input placeholder="默认值" />
+                      </Form.Item>
+                      <Button type="link" danger onClick={() => remove(name)}>
+                        <DeleteOutlined />
+                      </Button>
+                    </Space>
+                  ))}
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      onClick={() => add()}
+                      block
+                      icon={<PlusOutlined />}
+                    >
+                      添加参数
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
 
             <Form.Item
               name="isEnabled"

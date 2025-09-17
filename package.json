@@ -1,5 +1,5 @@
 {
-  "name": "my-agent-app",
+  "name": "agent-app",
   "version": "1.0.0",
   "scripts": {
     "dev:server": "cd packages/server && pnpm run dev",
