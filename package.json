@@ -4,7 +4,8 @@
   "scripts": {
     "dev:server": "cd packages/server && pnpm run dev",
     "dev:frontend": "cd packages/frontend && pnpm run dev",
-    "dev": "concurrently \"pnpm run dev:server\" \"pnpm run dev:frontend\""
+    "dev": "concurrently \"pnpm run dev:server\" \"pnpm run dev:frontend\"",
+    "build": "cd packages/server && pnpm run build"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
