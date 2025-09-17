@@ -50,7 +50,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./packages/server
-          file: ./Dockerfile
+          file: ./packages/server/Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/amd64
           push: true
