@@ -48,9 +48,10 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v5
+        working-directory: ./packages/server
         with:
-          context: ./packages/server
-          file: ./packages/server/Dockerfile
+          context: .
+          file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/amd64
           push: true
