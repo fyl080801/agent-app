@@ -2,14 +2,32 @@ ARG BASEIMAGE=node:22-alpine
 
 FROM ${BASEIMAGE} as builder
 ENV ALARM_CHANNAL_CONFIG=1,2
-COPY . /build
-WORKDIR /build
-RUN sh ./scripts/build.sh
 
+WORKDIR /app
+COPY . .
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the application
+RUN pnpm run build
+
+# Runtime stage
 FROM ${BASEIMAGE}
-WORKDIR /build
-COPY --from=builder /build/output .
+WORKDIR /app
+
+# Copy built files and dependencies
+COPY --from=builder /app/.keystone ./.keystone
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Install production dependencies only
+RUN npm install -g pnpm
+RUN pnpm install --prod --frozen-lockfile
 
 EXPOSE 3000
 
-CMD npm run start
+CMD ["pnpm", "run", "start"]

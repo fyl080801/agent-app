@@ -4,7 +4,9 @@ on:
   push:
     tags:
       - '*'
-      - '!*-alpha*'
+  pull_request:
+    branches:
+      - main
 
 env:
   registry: ghcr.io
@@ -47,8 +49,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./packages/server
-          file: ./Dockerfile
+          context: .
+          file: ./packages/server/Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/amd64
           push: true
