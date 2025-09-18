@@ -1,17 +1,16 @@
-FROM node:22-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+ARG BASEIMAGE=node:22-alpine
+FROM ${BASEIMAGE} AS base
+RUN apk add --no-cache openssl
+RUN npm install -g pnpm
 
 FROM base AS build
 COPY . /usr/src/app
 WORKDIR /usr/src/app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 RUN pnpm run -r build
 RUN pnpm deploy --filter=agent-server --prod /prod/agent-server
-# RUN pnpm deploy --filter=agent-frontend --prod /prod/agent-frontend
 
+# Runtime stage
 FROM base AS agent-server
 COPY --from=build /prod/agent-server/.keystone /prod/agent-server/.keystone
 COPY --from=build /prod/agent-server/.prisma /prod/agent-server/.prisma
@@ -23,3 +22,4 @@ WORKDIR /prod/agent-server
 
 EXPOSE 3000
 CMD [ "pnpm", "start" ]
+
