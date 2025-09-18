@@ -9,7 +9,7 @@ datasource postgresql {
 
 generator client {
   provider = "prisma-client-js"
-  output   = ".prisma/client"
+  output   = "./node_modules/.prisma/client"
 }
 
 model User {

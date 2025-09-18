@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "keystone dev --no-db-push",
-    "build": "keystone build --no-prisma",
-    "migrate": "keystone prisma migrate dev",
+    "build": "keystone build",
+    "db:migrate": "keystone prisma migrate dev",
+    "db:deploy": "keystone prisma migrate deploy",
     "start": "keystone start --with-migrations"
   },
   "dependencies": {
