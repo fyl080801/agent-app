@@ -47,10 +47,11 @@ jobs:
           images: ${{env.registry}}/${{ env.image_name }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
+          target: agent-server
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/amd64
           push: true

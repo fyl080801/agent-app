@@ -10,3 +10,5 @@ onlyBuiltDependencies:
 
 packages:
   - packages/*
+
+inject-workspace-packages: true
