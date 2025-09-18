@@ -4,12 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "keystone dev --no-db-push",
-    "start": "keystone start --with-migrations",
-    "build": "keystone build --no-prisma",
-    "db:migrate": "keystone prisma migrate dev",
-    "db:deploy": "keystone prisma migrate deploy",
-    "deploy": "npm run build && npm run db:deploy",
-    "postinstall": "keystone build --no-ui --frozen --no-prisma"
+    "build": "keystone build",
+    "migrate": "keystone prisma migrate dev",
+    "start": "keystone start --with-migrations"
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.37",
@@ -19,7 +16,7 @@
     "@keystone-6/core": "^6.5.1",
     "@keystone-6/fields-document": "^9.1.1",
     "@keystone-ui/core": "^5.0.2",
-    "@prisma/client": "5.22.0",
+    "@prisma/client": "^6.16.2",
     "axios": "^1.12.0",
     "body-parser": "^2.2.0",
     "dayjs": "^1.11.18",
@@ -29,6 +26,7 @@
     "http-proxy-middleware": "^3.0.5",
     "lodash-es": "^4.17.21",
     "openai": "^5.19.1",
+    "prisma": "^6.16.2",
     "winston": "^3.17.0",
     "ws": "^8.18.3",
     "zod": "^3"
@@ -47,7 +45,6 @@
     "autoprefixer": "^10.4.21",
     "graphql": "^16.11.0",
     "postcss": "^8.5.6",
-    "prisma": "5.22.0",
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.92.1",
