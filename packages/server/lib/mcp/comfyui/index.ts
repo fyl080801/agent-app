@@ -30,12 +30,16 @@ useFastMcp(async (server, context) => {
         if (!item.isRequired) {
           target[item.name].optional()
         }
-        if (![null, undefined].includes(item.min)) {
-          target[item.name].min(+item.min)
+
+        if (item.dataType === 'number') {
+          if (![null, undefined].includes(item.min)) {
+            target[item.name].min(+item.min)
+          }
+          if (![null, undefined].includes(item.max)) {
+            target[item.name].max(+item.max)
+          }
         }
-        if (![null, undefined].includes(item.max)) {
-          target[item.name].max(+item.max)
-        }
+
         return target
       },
       {},
