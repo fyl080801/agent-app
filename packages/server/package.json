@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "keystone dev --no-db-push",
-    "build": "keystone build",
-    "migrate": "keystone prisma migrate dev",
+    "build": "keystone build && keystone prisma migrate dev",
     "start": "keystone start --with-migrations"
   },
   "dependencies": {
@@ -26,7 +25,6 @@
     "http-proxy-middleware": "^3.0.5",
     "lodash-es": "^4.17.21",
     "openai": "^5.19.1",
-    "prisma": "^6.16.2",
     "winston": "^3.17.0",
     "ws": "^8.18.3",
     "zod": "^3"
@@ -45,6 +43,7 @@
     "autoprefixer": "^10.4.21",
     "graphql": "^16.11.0",
     "postcss": "^8.5.6",
+    "prisma": "^6.16.2",
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.92.1",

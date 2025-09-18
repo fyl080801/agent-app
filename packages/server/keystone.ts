@@ -14,7 +14,7 @@ export default withAuth(
   config<TypeInfo>({
     db: {
       ...db,
-      prismaClientPath: 'node_modules/.prisma/client',
+      prismaClientPath: '.prisma/client',
     },
     lists,
     session,
