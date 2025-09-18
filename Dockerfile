@@ -9,11 +9,7 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run -r build
-
-# server
-RUN pnpm db:deploy --filter=agent-server --prod /prod/agent-server
-
-# client
+RUN pnpm deploy --filter=agent-server --prod /prod/agent-server
 # RUN pnpm deploy --filter=agent-frontend --prod /prod/agent-frontend
 
 FROM base AS agent-server
