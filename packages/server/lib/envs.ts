@@ -4,6 +4,7 @@ const env = process.env
 
 export const SERVER_PORT = +(env.SERVER_PORT ?? 3000)
 export const MCP_PORT = +(env.MCP_PORT ?? 9000)
+export const MCP_HOST = env.MCP_HOST ?? '0.0.0.0'
 
 export const DATABASE_PROVIDER: DatabaseProvider =
   (env.DATABASE_PROVIDER as DatabaseProvider) ?? 'postgresql'

@@ -1,7 +1,7 @@
 import { KeystoneContext } from '@keystone-6/core/types'
 import { FastMCP } from 'fastmcp'
 import { type TypeInfo } from '.keystone/types'
-import { MCP_PORT } from '../envs'
+import { MCP_PORT, MCP_HOST } from '../envs'
 import { createServer } from 'net'
 import { execSync } from 'child_process'
 
@@ -166,6 +166,7 @@ export const startFastMcp = async (
     httpStream: {
       port: targetPort,
       endpoint: '/mcp',
+      host: MCP_HOST,
     },
   })
 
