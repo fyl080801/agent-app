@@ -58,7 +58,7 @@ jobs:
           file: ./Dockerfile
           target: agent-server
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

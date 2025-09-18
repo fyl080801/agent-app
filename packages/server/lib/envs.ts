@@ -5,9 +5,9 @@ const env = process.env
 export const SERVER_PORT = +(env.SERVER_PORT ?? 3000)
 export const MCP_PORT = +(env.MCP_PORT ?? 9000)
 
-export const DATABASE_PROVIDER: DatabaseProvider =
-  (env.DATABASE_PROVIDER as DatabaseProvider) ?? 'sqlite'
-export const DATABASE_URL = env.DATABASE_URL ?? 'file:./keystone.db'
+export const DB_PROVIDER: DatabaseProvider =
+  (env.DB_PROVIDER as DatabaseProvider) ?? 'sqlite'
+export const DB_URL = env.DB_URL ?? 'file:./keystone.db'
 export const SESSION_SECRET = env.SESSION_SECRET
 //
 export const OPENAI_API_KEY = env.OPENAI_API_KEY ?? ''

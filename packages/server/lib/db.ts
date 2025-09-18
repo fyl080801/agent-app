@@ -4,7 +4,7 @@ import {
   KeystoneContext,
 } from '@keystone-6/core/types'
 import { TypeInfo } from '.keystone/types'
-import { DATABASE_PROVIDER, DATABASE_URL } from './envs'
+import { DB_PROVIDER, DB_URL } from './envs'
 
 type DbType = {
   provider: DatabaseProvider
@@ -20,6 +20,6 @@ type DbType = {
 }
 
 export const db: DbType = {
-  provider: DATABASE_PROVIDER,
-  url: DATABASE_URL,
+  provider: DB_PROVIDER,
+  url: DB_URL,
 }
