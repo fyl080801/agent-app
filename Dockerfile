@@ -22,4 +22,4 @@ COPY --from=build /prod/agent-server/schema.prisma /prod/agent-server/schema.pri
 WORKDIR /prod/agent-server
 
 EXPOSE 3000
-CMD [ "pnpm run migrate && pnpm start" ]
+CMD [ "pnpm", "start" ]
