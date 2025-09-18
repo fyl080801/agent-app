@@ -6,7 +6,7 @@ export const SERVER_PORT = +(env.SERVER_PORT ?? 3000)
 export const MCP_PORT = +(env.MCP_PORT ?? 9000)
 
 export const DATABASE_PROVIDER: DatabaseProvider =
-  (env.DATABASE_PROVIDER as DatabaseProvider) ?? 'sqlite'
+  (env.DATABASE_PROVIDER as DatabaseProvider) ?? 'postgresql'
 export const DATABASE_URL = env.DATABASE_URL ?? 'file:./keystone.db'
 export const SESSION_SECRET = env.SESSION_SECRET
 //
