@@ -8,7 +8,7 @@ import { execSync } from 'child_process'
 const isPortAvailable = (port: number): Promise<boolean> => {
   return new Promise(resolve => {
     const server = createServer()
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, MCP_HOST, () => {
       // If we can listen, the port is available
       server.close(() => {
         resolve(true)
@@ -130,16 +130,16 @@ export const startFastMcp = async (
 ) => {
   const targetPort = Number(port || MCP_PORT)
 
-  console.log(`Checking if port ${targetPort} is available...`)
-  const isAvailable = await ensurePortAvailable(targetPort)
+  // console.log(`Checking if port ${targetPort} is available...`)
+  // const isAvailable = await ensurePortAvailable(targetPort)
 
-  if (!isAvailable) {
-    console.warn(
-      `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`,
-    )
-  } else {
-    console.log(`Port ${targetPort} is available`)
-  }
+  // if (!isAvailable) {
+  //   console.warn(
+  //     `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`,
+  //   )
+  // } else {
+  //   console.log(`Port ${targetPort} is available`)
+  // }
 
   if (isServerStarted && serverInstance) {
     try {
