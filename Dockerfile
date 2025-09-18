@@ -15,6 +15,7 @@ FROM base AS agent-server
 COPY --from=build /prod/agent-server/.keystone /prod/agent-server/.keystone
 COPY --from=build /prod/agent-server/migrations /prod/agent-server/migrations
 COPY --from=build /prod/agent-server/node_modules /prod/agent-server/node_modules
+COPY --from=build /prod/agent-server/.prisma /prod/agent-server/.prisma
 COPY --from=build /prod/agent-server/package.json /prod/agent-server/package.json
 COPY --from=build /prod/agent-server/schema.prisma /prod/agent-server/schema.prisma
 WORKDIR /prod/agent-server
