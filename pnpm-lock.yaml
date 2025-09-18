@@ -3,6 +3,7 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+  injectWorkspacePackages: true
 
 importers:
 
@@ -113,7 +114,7 @@ importers:
         version: 4.17.21
       openai:
         specifier: ^5.19.1
-        version: 5.19.1(ws@8.18.3)(zod@4.1.8)
+        version: 5.19.1(ws@8.18.3)(zod@3.25.76)
       winston:
         specifier: ^3.17.0
         version: 3.17.0
@@ -121,8 +122,8 @@ importers:
         specifier: ^8.18.3
         version: 8.18.3
       zod:
-        specifier: ^4.1.8
-        version: 4.1.8
+        specifier: ^3
+        version: 3.25.76
     devDependencies:
       '@ant-design/cssinjs':
         specifier: ^1.24.0
@@ -181,6 +182,9 @@ importers:
       typed-scss-modules:
         specifier: ^8.1.1
         version: 8.1.1(sass@1.92.1)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
       typescript-plugin-css-modules:
         specifier: ^5.2.0
         version: 5.2.0(typescript@5.9.2)
@@ -5744,9 +5748,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
-
   zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
 
@@ -10746,10 +10747,10 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@5.19.1(ws@8.18.3)(zod@4.1.8):
+  openai@5.19.1(ws@8.18.3)(zod@3.25.76):
     optionalDependencies:
       ws: 8.18.3
-      zod: 4.1.8
+      zod: 3.25.76
 
   optimism@0.18.1:
     dependencies:
@@ -12511,8 +12512,6 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
-
-  zod@4.1.8: {}
 
   zwitch@1.0.5: {}
 
