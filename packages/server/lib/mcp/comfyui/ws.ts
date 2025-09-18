@@ -23,6 +23,7 @@ type ComfyuiEventHandler = (event: Event & { data?: any }) => void
 
 interface ComfyWsParams {
   prompt: { [key: string]: any }
+  end: string
 }
 
 interface ComfyuiExecutionResult {
@@ -185,16 +186,24 @@ export class ComfyuiWebsocket {
             break
 
           case 'executed':
-            this.close()
-            if (eventData.data) {
-              resolve(eventData.data as ComfyuiExecutionResult)
-            } else {
-              reject(
-                new ComfyuiWebsocketError(
-                  'Invalid executed event data',
-                  'INVALID_EXECUTED_DATA',
-                ),
-              )
+            {
+              if (eventData.data?.node !== params.end) {
+                this.events.dispatchEvent(
+                  new ComfyuiEvent(eventData.type, { data: eventData }),
+                )
+                break
+              }
+              this.close()
+              if (eventData.data) {
+                resolve(eventData.data as ComfyuiExecutionResult)
+              } else {
+                reject(
+                  new ComfyuiWebsocketError(
+                    'Invalid executed event data',
+                    'INVALID_EXECUTED_DATA',
+                  ),
+                )
+              }
             }
             break
 

@@ -14,7 +14,7 @@ useFastMcp(async (server, context) => {
       isEnabled: { equals: true },
     },
     query:
-      'id name description workflowParameters { name description dataType prop isRequired min max defaultValue } workflowDefinition',
+      'id name description workflowParameters { name description dataType prop isRequired min max defaultValue } workflowDefinition endNode',
   })
 
   tools.forEach(tool => {
@@ -97,7 +97,7 @@ useFastMcp(async (server, context) => {
         ws.on('progress', progressHandler)
 
         try {
-          const prompt = JSON.parse(workflowDefinition)
+          const prompt = workflowDefinition
           workflowParameters.forEach((p: any) => {
             let value: any = _.get(params, p.name)
             if (![null, undefined].includes(value) && p.dataType === 'number') {
@@ -113,6 +113,7 @@ useFastMcp(async (server, context) => {
           })
           const result = await ws.open({
             prompt,
+            end: tool.endNode,
           })
           if (!result?.output?.images?.length) {
             throw new Error('No images returned from ComfyUI')
@@ -187,6 +188,9 @@ useFastMcp(async (server, context) => {
               },
             })),
           }
+        } catch (err: any) {
+          ctx.log.error(err.message)
+          throw err
         } finally {
           ws.close()
         }

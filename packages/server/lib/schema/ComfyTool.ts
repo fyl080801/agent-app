@@ -7,6 +7,7 @@ import {
   checkbox,
   timestamp,
   select,
+  json,
 } from '@keystone-6/core/fields'
 
 export const ComfyToolParameter = list({
@@ -59,10 +60,10 @@ export const ComfyTool = list({
       label: '描述',
       ui: { displayMode: 'textarea' },
     }),
-    workflowDefinition: text({
+    workflowDefinition: json({
       label: '工作流定义',
-      ui: { displayMode: 'textarea' },
-      validation: { isRequired: true },
+      ui: {},
+      // validation: { isRequired: true },
     }),
     workflowParameters: relationship({
       ref: 'ComfyToolParameter.comfyTool',
@@ -98,6 +99,11 @@ export const ComfyTool = list({
         linkToItem: true,
         inlineConnect: true,
       },
+    }),
+    endNode: text({
+      label: '结束节点',
+      ui: {},
+      validation: { isRequired: true },
     }),
     isEnabled: checkbox({ defaultValue: true, label: '启用' }),
     createdAt: timestamp({ defaultValue: { kind: 'now' } }),

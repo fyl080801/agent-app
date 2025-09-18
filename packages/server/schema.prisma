@@ -67,8 +67,9 @@ model ComfyTool {
   id                 String               @id @default(cuid())
   name               String               @unique @default("")
   description        String               @default("")
-  workflowDefinition String               @default("")
+  workflowDefinition Json?
   workflowParameters ComfyToolParameter[] @relation("ComfyToolParameter_comfyTool")
+  endNode            String               @default("")
   isEnabled          Boolean              @default(true)
   createdAt          DateTime?            @default(now())
   updatedAt          DateTime?            @default(now())

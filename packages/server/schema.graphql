@@ -438,9 +438,10 @@ type ComfyTool {
   id: ID!
   name: String
   description: String
-  workflowDefinition: String
+  workflowDefinition: JSON
   workflowParameters(where: ComfyToolParameterWhereInput! = {}, orderBy: [ComfyToolParameterOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ComfyToolParameterWhereUniqueInput): [ComfyToolParameter!]
   workflowParametersCount(where: ComfyToolParameterWhereInput! = {}): Int
+  endNode: String
   isEnabled: Boolean
   createdAt: DateTime
   updatedAt: DateTime
@@ -458,8 +459,8 @@ input ComfyToolWhereInput {
   id: IDFilter
   name: StringFilter
   description: StringFilter
-  workflowDefinition: StringFilter
   workflowParameters: ComfyToolParameterManyRelationFilter
+  endNode: StringFilter
   isEnabled: BooleanFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
@@ -475,7 +476,7 @@ input ComfyToolOrderByInput {
   id: OrderDirection
   name: OrderDirection
   description: OrderDirection
-  workflowDefinition: OrderDirection
+  endNode: OrderDirection
   isEnabled: OrderDirection
   createdAt: OrderDirection
   updatedAt: OrderDirection
@@ -484,8 +485,9 @@ input ComfyToolOrderByInput {
 input ComfyToolUpdateInput {
   name: String
   description: String
-  workflowDefinition: String
+  workflowDefinition: JSON
   workflowParameters: ComfyToolParameterRelateToManyForUpdateInput
+  endNode: String
   isEnabled: Boolean
   createdAt: DateTime
   updatedAt: DateTime
@@ -506,8 +508,9 @@ input ComfyToolUpdateArgs {
 input ComfyToolCreateInput {
   name: String
   description: String
-  workflowDefinition: String
+  workflowDefinition: JSON
   workflowParameters: ComfyToolParameterRelateToManyForCreateInput
+  endNode: String
   isEnabled: Boolean
   createdAt: DateTime
   updatedAt: DateTime
