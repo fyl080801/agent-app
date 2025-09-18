@@ -27,7 +27,7 @@ Just change the `db` property on line 16 of the Keystone file [./keystone.ts](./
 ```typescript
 db: {
     provider: 'postgresql',
-    url: process.env.DB_URL || 'DATABASE_URL_TO_REPLACE',
+    url: process.env.DATABASE_URL || 'DATABASE_URL_TO_REPLACE',
 }
 ```
 

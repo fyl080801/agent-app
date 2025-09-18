@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "keystone dev --no-db-push",
     "build": "keystone build && keystone prisma migrate dev",
+    "migrate": "keystone prisma migrate dev",
     "start": "keystone start --with-migrations"
   },
   "dependencies": {
