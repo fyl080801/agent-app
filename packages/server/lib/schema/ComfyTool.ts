@@ -103,7 +103,8 @@ export const ComfyTool = list({
     endNode: text({
       label: '结束节点',
       ui: {},
-      validation: { isRequired: true },
+      db: { isNullable: true },
+      validation: {},
     }),
     isEnabled: checkbox({ defaultValue: true, label: '启用' }),
     createdAt: timestamp({ defaultValue: { kind: 'now' } }),

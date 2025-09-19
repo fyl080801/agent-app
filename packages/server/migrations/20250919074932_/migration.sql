@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "ComfyTool" ALTER COLUMN "endNode" DROP NOT NULL,
+ALTER COLUMN "endNode" DROP DEFAULT;

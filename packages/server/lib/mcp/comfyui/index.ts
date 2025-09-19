@@ -6,6 +6,7 @@ import { ComfyuiWebsocket } from './ws'
 import _ from 'lodash-es'
 import { uploadToS3 } from './s3'
 import axios from 'axios'
+import { convertInputProp, getInputPropValue, getInputValue } from './helpers'
 
 // Register ComfyUI tools with FastMCP
 useFastMcp(async (server, context) => {
@@ -18,7 +19,13 @@ useFastMcp(async (server, context) => {
   })
 
   tools.forEach(tool => {
-    const { workflowParameters, workflowDefinition } = tool
+    const {
+      workflowParameters,
+      workflowDefinition,
+      name: toolName,
+      description: toolDescription,
+      endNode,
+    } = tool
 
     const parameters = workflowParameters?.reduce(
       (
@@ -46,8 +53,8 @@ useFastMcp(async (server, context) => {
     )
 
     server.addTool({
-      name: tool.name,
-      description: tool.description,
+      name: toolName,
+      description: toolDescription,
       parameters: z.object(parameters),
       execute: async (params, ctx) => {
         if (!COMFYUI_HOST) {
@@ -97,88 +104,95 @@ useFastMcp(async (server, context) => {
         ws.on('progress', progressHandler)
 
         try {
-          const prompt = workflowDefinition
           workflowParameters.forEach((p: any) => {
-            let value: any = _.get(params, p.name)
-            if (![null, undefined].includes(value) && p.dataType === 'number') {
-              if (![null, undefined].includes(p.min)) {
-                value = Math.max(+value, +p.min)
-              }
-              if (![null, undefined].includes(p.max)) {
-                value = Math.min(+value, +p.max)
-              }
-            }
+            _.set(
+              workflowDefinition,
+              convertInputProp(p.prop),
+              getInputValue(params, p),
+            )
+          })
 
-            _.set(prompt, p.prop, value)
-          })
           const result = await ws.open({
-            prompt,
-            end: tool.endNode,
+            prompt: workflowDefinition,
+            end: endNode,
           })
+
           if (!result?.output?.images?.length) {
             throw new Error('No images returned from ComfyUI')
           }
+
           ctx.log.info(`Generated ${result.output.images.length} image(s)`)
-          const resources = []
-          for (const [index, image] of result.output.images.entries()) {
-            try {
-              ctx.reportProgress({
-                progress: index + 1,
-                total: result.output.images.length,
-              })
 
-              const imageUrl = `${COMFYUI_HTTP_PROTOCOL}://${COMFYUI_HOST}/view?filename=${encodeURIComponent(
-                image.filename,
-              )}&subfolder=${encodeURIComponent(
-                image.subfolder || '',
-              )}&type=${encodeURIComponent(image.type || 'output')}`
+          const resources: string[] = (
+            await Promise.allSettled(
+              result.output.images.entries().map(async ([index, image]) => {
+                try {
+                  ctx.reportProgress({
+                    progress: index + 1,
+                    total: result.output.images.length,
+                  })
 
-              if (S3_ENABLE) {
-                const imageResponse = await axios.get(imageUrl, {
-                  responseType: 'arraybuffer',
-                  timeout: 30000, // 30 second timeout
-                })
+                  const imageUrl = `${COMFYUI_HTTP_PROTOCOL}://${COMFYUI_HOST}/view?filename=${encodeURIComponent(
+                    image.filename,
+                  )}&subfolder=${encodeURIComponent(
+                    image.subfolder || '',
+                  )}&type=${encodeURIComponent(image.type || 'output')}`
 
-                if (imageResponse.status !== 200) {
-                  throw new Error(
-                    `Failed to download image: ${imageResponse.status}`,
-                  )
+                  if (S3_ENABLE) {
+                    const imageResponse = await axios.get(imageUrl, {
+                      responseType: 'arraybuffer',
+                      timeout: 30000, // 30 second timeout
+                    })
+
+                    if (imageResponse.status !== 200) {
+                      throw new Error(
+                        `Failed to download image: ${imageResponse.status}`,
+                      )
+                    }
+
+                    const s3Url = await uploadToS3(
+                      image.filename,
+                      imageResponse.data,
+                    )
+
+                    return s3Url
+                  } else {
+                    return imageUrl
+                  }
+                } catch (error) {
+                  ctx.log.error(`Error processing image ${index + 1}: ${error}`)
+                  return null
                 }
+              }),
+            )
+          )
+            .map(item => {
+              if (item.status !== 'fulfilled' || !item.value) return null
 
-                const s3Url = await uploadToS3(
-                  image.filename,
-                  imageResponse.data,
-                )
+              return item.value
+            })
+            .filter<string>(item => item !== null)
 
-                resources.push(s3Url)
+          await Promise.allSettled(
+            resources.map(async img => {
+              if (!img) return
 
-                await ctx.streamContent({
-                  type: 'resource',
-                  resource: {
-                    uri: s3Url,
-                    mimeType: 'image/png',
-                  },
-                })
-              } else {
-                resources.push(imageUrl)
+              await ctx.streamContent({
+                type: 'resource',
+                resource: {
+                  uri: img,
+                  mimeType: 'image/png',
+                },
+              })
+            }),
+          )
 
-                await ctx.streamContent({
-                  type: 'resource',
-                  resource: {
-                    uri: imageUrl,
-                    mimeType: 'image/png',
-                  },
-                })
-              }
-            } catch (error) {
-              ctx.log.error(`Error processing image ${index + 1}: ${error}`)
-              // Continue with other images if one fails
-            }
-          }
           if (resources.length === 0) {
             throw new Error('Failed to process any images')
           }
+
           ctx.log.info(`Successfully processed ${resources.length} image(s)`)
+
           return {
             content: resources.map(item => ({
               type: 'resource',

@@ -19,10 +19,10 @@ export const downloadImageAsBase64 = async (url: string) => {
   }
 }
 
-export const jsonTryParse = (input: string, def?: any) => {
+export const jsonTryParse = <T = any>(input: string, def?: T): T => {
   try {
     return JSON.parse(input)
   } catch {
-    return def
+    return def as T
   }
 }

@@ -460,7 +460,7 @@ input ComfyToolWhereInput {
   name: StringFilter
   description: StringFilter
   workflowParameters: ComfyToolParameterManyRelationFilter
-  endNode: StringFilter
+  endNode: StringNullableFilter
   isEnabled: BooleanFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter

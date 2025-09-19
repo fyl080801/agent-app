@@ -170,45 +170,44 @@ export class ComfyuiWebsocket {
       this.websocket.addEventListener('message', ({ data }) => {
         if (this.isClosed) return
 
-        const eventData = jsonTryParse(data?.toString())
+        const eventData = jsonTryParse<{
+          type: ComfyuiEvents
+          data: any
+          message: string
+        }>(data?.toString())
 
         if (!eventData?.type) return
 
-        switch (eventData.type) {
-          case 'status':
-          case 'execution_start':
-          case 'execution_cached':
-          case 'progress':
-          case 'executing':
+        const handles: { [key: string]: Function } = {
+          executing: () => {
             this.events.dispatchEvent(
               new ComfyuiEvent(eventData.type, { data: eventData }),
             )
-            break
-
-          case 'executed':
-            {
-              if (eventData.data?.node !== params.end) {
-                this.events.dispatchEvent(
-                  new ComfyuiEvent(eventData.type, { data: eventData }),
-                )
-                break
-              }
-              this.close()
-              if (eventData.data) {
-                resolve(eventData.data as ComfyuiExecutionResult)
-              } else {
-                reject(
-                  new ComfyuiWebsocketError(
-                    'Invalid executed event data',
-                    'INVALID_EXECUTED_DATA',
-                  ),
-                )
-              }
+          },
+          executed: () => {
+            // 对于某些工作流，存在多个执行结束的节点，这时候需要指定一个结束节点用来判断
+            if (params.end && eventData.data?.node !== params.end) {
+              this.events.dispatchEvent(
+                new ComfyuiEvent(eventData.type, { data: eventData }),
+              )
+              return
             }
-            break
 
-          case 'execution_error':
-          case 'error':
+            this.close()
+
+            // 这里先考虑结束的节点就是输出图片的节点，实际上如果生成多种类型的资源，应该在生成资源的时候有个事件通知出去
+            if (eventData.data) {
+              resolve(eventData.data as ComfyuiExecutionResult)
+            } else {
+              reject(
+                new ComfyuiWebsocketError(
+                  'Invalid executed event data',
+                  'INVALID_EXECUTED_DATA',
+                ),
+              )
+            }
+          },
+          error: () => {
             this.close()
             const errorMessage =
               eventData.data?.error?.message ||
@@ -220,8 +219,10 @@ export class ComfyuiWebsocket {
                 'EXECUTION_ERROR',
               ),
             )
-            break
+          },
         }
+
+        handles[eventData.type]?.()
       })
 
       this.websocket.addEventListener('error', error => {

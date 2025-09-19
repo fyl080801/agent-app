@@ -7,7 +7,8 @@
     "build": "keystone build",
     "db:migrate": "keystone prisma migrate dev",
     "db:deploy": "keystone prisma migrate deploy",
-    "start": "keystone start --with-migrations"
+    "start": "keystone start --with-migrations",
+    "postinstall": "keystone postinstall"
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.37",
