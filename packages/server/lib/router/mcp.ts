@@ -1,9 +1,9 @@
 // import { createProxyMiddleware } from "http-proxy-middleware"
-import { useAppRouter } from '../app'
+import { useApp } from '../app'
 import { startFastMcp } from '../mcp'
 // import { MCP_PORT } from "../envs"
 
-useAppRouter((app, context) => {
+useApp((app, context) => {
   // app.all(
   //   "/mcp",
   //   createProxyMiddleware({

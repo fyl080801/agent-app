@@ -1,1 +1,1 @@
-export { openAIService } from './agent'
+export { OpenAIService } from './agent'

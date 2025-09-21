@@ -9,7 +9,7 @@ type AppRouterSetup = (
 
 const appSetups: AppRouterSetup[] = []
 
-export const useAppRouter = (setup: AppRouterSetup) => {
+export const useApp = (setup: AppRouterSetup) => {
   appSetups.push(setup)
 }
 

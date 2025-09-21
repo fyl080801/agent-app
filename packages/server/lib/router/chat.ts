@@ -1,9 +1,11 @@
 import { Request, Response } from 'express'
 import { ChatCompletionMessageParam } from 'openai/resources'
-import { useAppRouter } from '../app'
-import { openAIService } from '../agents'
+import { useApp } from '../app'
+import { OpenAIService } from '../agents'
+import OpenAI from 'openai/index.js'
+import { getModelProvider } from '../service/profile'
 
-useAppRouter((app, context) => {
+useApp((app, context) => {
   // SSE helper function
   function setupSSE(req: Request, res: Response) {
     res.writeHead(200, {
@@ -38,10 +40,19 @@ useAppRouter((app, context) => {
       // Setup SSE
       const keepAlive = setupSSE(req, res)
 
+      const provider = await getModelProvider()
+
+      const openAIService = new OpenAIService(
+        new OpenAI({
+          baseURL: provider.baseURL,
+          apiKey: provider.apiKey,
+        }),
+      )
+
       // Stream the response
       await openAIService.streamChatCompletion(
         messages as ChatCompletionMessageParam[],
-        model || state.model,
+        model || state.model || provider.defaultModel,
         temperature || state.temperature,
         chunk => {
           res.write(chunk)

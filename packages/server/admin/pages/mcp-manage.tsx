@@ -12,15 +12,14 @@ import {
   Space,
   message,
   Typography,
-  Card,
-  List,
-  Popconfirm,
   Divider,
+  Card,
 } from 'antd'
 import { ReloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { api } from '../lib/api'
 import styles from './mcp-manage.module.scss'
-import { gql, useApolloClient } from '@keystone-6/core/admin-ui/apollo'
+import { useComfyToolClient } from '../lib/comfyTool'
+import { useRouter } from 'next/navigation'
 
 const { TextArea } = Input
 const { Option } = Select
@@ -56,102 +55,28 @@ export default () => {
   const [editingTool, setEditingTool] = useState<ComfyTool | null>(null)
   const [form] = Form.useForm()
   const [parameterForm] = Form.useForm()
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  })
+  const client = useComfyToolClient()
+  const router = useRouter()
 
-  const client = useApolloClient()
-
-  const loadTools = async () => {
+  const loadTools = async (current = 1, pageSize = 10) => {
     setLoading(true)
     try {
-      const { data } = await client.query({
-        query: gql`
-          query (
-            $where: ComfyToolWhereInput
-            $take: Int!
-            $skip: Int!
-            $orderBy: [ComfyToolOrderByInput!]
-          ) {
-            items: comfyTools(
-              where: $where
-              take: $take
-              skip: $skip
-              orderBy: $orderBy
-            ) {
-              id
-              name
-              description
-              isEnabled
-              createdAt
-              updatedAt
-            }
-            count: comfyToolsCount(where: $where)
-          }
-        `,
-        variables: {
-          take: 10,
-          skip: 0,
-        },
+      const result = await client.list({
+        current,
+        pageSize,
       })
 
-      // create
-      // client.mutate({
-      //   mutation: gql`
-      //     mutation ($data: ComfyToolCreateInput!) {
-      //       item: createComfyTool(data: $data) {
-      //         id
-      //         label: name
-      //         __typename
-      //       }
-      //     }
-      //   `,
-      //   variables: {
-      //     data: {},
-      //   },
-      // })
-
-      // delete
-      // client.mutate({
-      //   mutation: gql`
-      //     mutation ($where: [ComfyToolWhereUniqueInput!]!) {
-      //       deleteComfyTools(where: $where) {
-      //         id
-      //         name
-      //         __typename
-      //       }
-      //     }
-      //   `,
-      //   variables: {
-      //     where: [{ id: '' }],
-      //   },
-      // })
-
-      // update
-      // client.mutate({
-      //   mutation: gql`
-      //     mutation ($data: ComfyToolUpdateInput!, $id: ID!) {
-      //       item: updateComfyTool(where: { id: $id }, data: $data) {
-      //         id
-      //         name
-      //         description
-      //         workflowDefinition
-      //         workflowParameters {
-      //           id
-      //           label: name
-      //           __typename
-      //         }
-      //         isEnabled
-      //         createdAt
-      //         updatedAt
-      //         __typename
-      //       }
-      //     }
-      //   `,
-      //   variables: {
-      //     id: '',
-      //     data: {},
-      //   },
-      // })
-
-      setTools(data.items)
+      setTools(result.items)
+      setPagination({
+        current,
+        pageSize,
+        total: result.total,
+      })
     } catch (error) {
       console.log(error)
       message.error('加载工具列表失败')
@@ -175,9 +100,8 @@ export default () => {
   }
 
   const handleCreate = () => {
-    setEditingTool(null)
-    form.resetFields()
-    setModalVisible(true)
+    // history.pushState({}, '', '/mcp-manage//form')
+    router.push('/mcp-manage/form')
   }
 
   const handleEdit = (tool: ComfyTool) => {
@@ -297,7 +221,7 @@ export default () => {
 
   return (
     <PageContainer header={<Heading type="h3">ComfyMCP管理</Heading>}>
-      <div className={styles.container}>
+      <Card>
         <div className="mb-[16px] flex justify-between items-center">
           <Space>
             <Button type="primary" onClick={handleCreate}>
@@ -313,7 +237,18 @@ export default () => {
           dataSource={tools}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+            showQuickJumper: true,
+            showTotal: total => `共 ${total} 条记录`,
+          }}
+          onChange={pagination => {
+            loadTools(pagination.current, pagination.pageSize)
+          }}
         />
 
         <Modal
@@ -437,7 +372,7 @@ export default () => {
             </Form.Item>
           </Form>
         </Modal>
-      </div>
+      </Card>
     </PageContainer>
   )
 }

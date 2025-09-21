@@ -23,8 +23,8 @@ const openai = new OpenAI({
 class OpenAIService {
   private client: OpenAI
 
-  constructor() {
-    this.client = openai
+  constructor(client: OpenAI) {
+    this.client = client
   }
 
   /**
@@ -261,16 +261,4 @@ class OpenAIService {
 // Export the service
 export default OpenAIService
 
-// Example usage
-export const openAIService = new OpenAIService()
-
-// Example: Chat completion
-// const messages: ChatCompletionMessageParam[] = [
-//   { role: 'system', content: 'You are a helpful assistant.' },
-//   { role: 'user', content: 'Hello, how are you?' }
-// ];
-// openAIService.chatCompletion(messages).then(response => {
-//   console.log('AI Response:', response);
-// }).catch(error => {
-//   console.error('Error:', error);
-// });
+export { OpenAIService }

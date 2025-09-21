@@ -76,17 +76,35 @@ model ComfyTool {
 }
 
 model ComfyToolParameter {
-  id           String     @id @default(cuid())
-  name         String     @default("")
-  description  String     @default("")
-  dataType     String     @default("string")
-  prop         String     @default("")
-  isRequired   Boolean    @default(false)
-  min          Int?
-  max          Int?
-  defaultValue String     @default("")
-  comfyTool    ComfyTool? @relation("ComfyToolParameter_comfyTool", fields: [comfyToolId], references: [id])
-  comfyToolId  String?    @map("comfyTool")
+  id              String     @id @default(cuid())
+  name            String     @default("")
+  description     String     @default("")
+  dataType        String     @default("string")
+  prop            String     @default("")
+  isRequired      Boolean    @default(false)
+  isToolParameter Boolean    @default(true)
+  min             Int?
+  max             Int?
+  minFloat        Float?
+  maxFloat        Float?
+  isRandom        Boolean    @default(false)
+  randomBit       String?    @default("64")
+  defaultValue    String     @default("")
+  comfyTool       ComfyTool? @relation("ComfyToolParameter_comfyTool", fields: [comfyToolId], references: [id])
+  comfyToolId     String?    @map("comfyTool")
 
   @@index([comfyToolId])
+}
+
+model ModelProvider {
+  id           String @id @default(cuid())
+  name         String @default("")
+  endpoint     String @default("")
+  apiKey       String @default("")
+  defaultModel String @default("")
+}
+
+model GlobalProfile {
+  id            Int    @id
+  modelProvider String @default("")
 }

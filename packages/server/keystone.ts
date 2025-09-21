@@ -9,6 +9,7 @@ import {
   extendHttpServer,
   db,
 } from './lib'
+import { useAppContext } from './lib/utils/core'
 
 export default withAuth(
   config<TypeInfo>({
@@ -19,7 +20,10 @@ export default withAuth(
     lists,
     session,
     server: {
-      extendExpressApp,
+      extendExpressApp: async (app, context) => {
+        await useAppContext(context)
+        extendExpressApp(app, context)
+      },
       extendHttpServer,
     },
   }),

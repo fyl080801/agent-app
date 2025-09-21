@@ -7,8 +7,7 @@
     "build": "keystone build",
     "db:migrate": "keystone prisma migrate dev",
     "db:deploy": "keystone prisma migrate deploy",
-    "start": "keystone start --with-migrations",
-    "postinstall": "keystone postinstall"
+    "start": "keystone start --with-migrations"
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.37",
@@ -25,8 +24,10 @@
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
     "fastmcp": "^3.16.0",
+    "graphql": "^16.11.0",
     "http-proxy-middleware": "^3.0.5",
     "lodash-es": "^4.17.21",
+    "next": "^14.2.32",
     "openai": "^5.19.1",
     "winston": "^3.17.0",
     "ws": "^8.18.3",
@@ -44,7 +45,6 @@
     "@types/ws": "^8.18.1",
     "antd": "^5.27.3",
     "autoprefixer": "^10.4.21",
-    "graphql": "^16.11.0",
     "postcss": "^8.5.6",
     "prisma": "^6.16.2",
     "react": "^18",

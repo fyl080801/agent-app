@@ -8,6 +8,7 @@ import {
   timestamp,
   select,
   json,
+  float,
 } from '@keystone-6/core/fields'
 
 export const ComfyToolParameter = list({
@@ -32,14 +33,35 @@ export const ComfyToolParameter = list({
           label: '数字',
           value: 'number',
         },
+        {
+          label: '浮点数',
+          value: 'float',
+        },
       ],
       defaultValue: 'string',
     }),
-    prop: text(),
+    prop: text({ label: '属性' }),
     isRequired: checkbox({ defaultValue: false }),
+    isToolParameter: checkbox({ label: '作为工具参数', defaultValue: true }),
     min: integer(),
     max: integer(),
-    defaultValue: text({}),
+    minFloat: float(),
+    maxFloat: float(),
+    isRandom: checkbox({ label: '随机数字' }),
+    randomBit: select({
+      label: '随机数位',
+      options: [
+        { value: '4', label: '4' },
+        { value: '8', label: '8' },
+        { value: '16', label: '16' },
+        { value: '32', label: '32' },
+        { value: '64', label: '64' },
+      ],
+      defaultValue: '64',
+    }),
+    defaultValue: text({
+      label: '默认值',
+    }),
     comfyTool: relationship({
       ref: 'ComfyTool.workflowParameters',
       many: false,

@@ -4,6 +4,8 @@ import { Tag } from './Tag'
 import { Agent } from './Agent'
 import { McpServer } from './McpServer'
 import * as ComfyTool from './ComfyTool'
+import * as ModelProvider from './ModelProvider'
+import * as Profile from './Profile'
 
 export const lists = {
   User,
@@ -12,4 +14,6 @@ export const lists = {
   Agent,
   McpServer,
   ...ComfyTool,
+  ...ModelProvider,
+  ...Profile,
 }
