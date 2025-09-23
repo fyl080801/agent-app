@@ -1,15 +1,12 @@
 import { KeystoneContext } from '@keystone-6/core/types'
-import { Express } from 'express'
+import express from 'express'
+import http from 'http'
 import { type TypeInfo } from '.keystone/types'
 
 export interface Context extends Record<string, any> {
-  app?: Express
-  application?: KeystoneContext<TypeInfo>
-  //   cache?: {
-  //     get: (key: string) => any
-  //     set: (key: string, value: any, timeout?: number) => void
-  //     clear: (key: string) => void
-  //   }
+  app?: express.Express
+  context?: KeystoneContext<TypeInfo>
+  server?: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
 }
 
 let currentInstance: Context
@@ -26,7 +23,7 @@ export const getCurrentContext = (): Context => {
 //   currentInstance = null
 // }
 
-export const initCurrentContext = (): Context => {
+export const initCurrentInstance = (): Context => {
   let context = getCurrentContext()
 
   if (!context) {

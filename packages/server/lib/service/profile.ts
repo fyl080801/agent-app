@@ -1,9 +1,9 @@
-import { useAppContext } from '../utils/core'
+import { useContext } from '../utils/core'
 
 const { DEFAULT_BASE_URL, DEFAULT_API_KEY, DEFAULT_MODEL } = process.env
 
 export const getModelProvider = async () => {
-  const context = await useAppContext()
+  const context = useContext()
 
   const defaultProvider = {
     baseURL: DEFAULT_BASE_URL,
@@ -11,7 +11,7 @@ export const getModelProvider = async () => {
     defaultModel: DEFAULT_MODEL,
   }
 
-  const profile = await context.query.GlobalProfile.findOne({
+  const profile = await context?.query.GlobalProfile.findOne({
     query: 'modelProvider',
     where: {
       id: '1',
@@ -22,7 +22,7 @@ export const getModelProvider = async () => {
     return defaultProvider
   }
 
-  const provider = await context.query.ModelProvider.findOne({
+  const provider = await context?.query.ModelProvider.findOne({
     query: 'name endpoint apiKey defaultModel',
     where: {
       id: profile.modelProvider,

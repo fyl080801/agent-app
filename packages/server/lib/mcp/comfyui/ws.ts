@@ -1,7 +1,7 @@
-import { jsonTryParse } from '../../utils'
 import { WebSocket } from 'ws'
 import axios from 'axios'
 import { COMFYUI_HTTP_PROTOCOL, COMFYUI_WS_PROTOCOL } from '../../envs'
+import { jsonTryParse } from '../../utils/helpers'
 
 // ComfyUI WebSocket implementation (simplified version of the one in generate.ts)
 type ComfyuiWebsocketOptions = {

@@ -6,7 +6,7 @@ import { ComfyuiWebsocket } from './ws'
 import _ from 'lodash-es'
 import { uploadToS3 } from './s3'
 import axios from 'axios'
-import { convertInputProp, getInputPropValue, getInputValue } from './helpers'
+import { convertInputProp, getInputValue } from './helpers'
 
 // Register ComfyUI tools with FastMCP
 useFastMcp(async (server, context) => {

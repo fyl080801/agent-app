@@ -1,9 +1,12 @@
 // import { createProxyMiddleware } from "http-proxy-middleware"
-import { useApp } from '../app'
 import { startFastMcp } from '../mcp'
+import { setup, useApp, useContext } from '../utils/core'
 // import { MCP_PORT } from "../envs"
 
-useApp((app, context) => {
+setup(() => {
+  const app = useApp()
+  const context = useContext()
+
   // app.all(
   //   "/mcp",
   //   createProxyMiddleware({
@@ -14,7 +17,7 @@ useApp((app, context) => {
   //   })
   // )
 
-  app.put('/api/mcp/restart', async (req, res) => {
+  app?.put('/api/mcp/restart', async (req, res) => {
     await startFastMcp(context)
     res.send({})
   })

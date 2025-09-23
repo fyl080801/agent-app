@@ -125,7 +125,7 @@ let serverInstance: FastMCP | null = null
 let isServerStarted = false
 
 export const startFastMcp = async (
-  context: KeystoneContext<TypeInfo>,
+  context?: KeystoneContext<TypeInfo>,
   port?: number,
 ) => {
   const targetPort = Number(port || MCP_PORT)
@@ -155,11 +155,12 @@ export const startFastMcp = async (
     version: '0.1.0',
   })
 
-  await Promise.all(
-    fastsetups.map(async setup => {
-      await Promise.resolve(setup(server, context))
-    }),
-  )
+  context &&
+    (await Promise.all(
+      fastsetups.map(async setup => {
+        await Promise.resolve(setup(server, context))
+      }),
+    ))
 
   await server.start({
     transportType: 'httpStream',

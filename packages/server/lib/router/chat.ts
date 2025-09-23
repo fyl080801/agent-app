@@ -1,11 +1,13 @@
 import { Request, Response } from 'express'
 import { ChatCompletionMessageParam } from 'openai/resources'
-import { useApp } from '../app'
 import { OpenAIService } from '../agents'
 import OpenAI from 'openai/index.js'
 import { getModelProvider } from '../service/profile'
+import { setup, useApp } from '../utils/core'
 
-useApp((app, context) => {
+setup(() => {
+  const app = useApp()
+
   // SSE helper function
   function setupSSE(req: Request, res: Response) {
     res.writeHead(200, {
@@ -29,7 +31,7 @@ useApp((app, context) => {
   }
 
   // SSE streaming chat completion endpoint
-  app.post('/api/chat/stream', async (req, res) => {
+  app?.post('/api/chat/stream', async (req, res) => {
     try {
       const { messages, model, temperature, state } = req.body
 

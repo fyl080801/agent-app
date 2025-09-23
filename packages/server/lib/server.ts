@@ -1,11 +1,19 @@
-import { Server } from 'http'
-import { type TypeInfo } from '.keystone/types'
-import { KeystoneContext, MaybePromise } from '@keystone-6/core/types'
 import { startFastMcp } from './mcp'
+import { setup, useApp, useContext } from './utils/core'
+import express from 'express'
 
-export const extendHttpServer: (
-  server: Server,
-  context: KeystoneContext<TypeInfo>,
-) => MaybePromise<void> = (server, context) => {
+// mcp server
+setup(() => {
+  const context = useContext()
+
   startFastMcp(context)
-}
+})
+
+// express
+setup(() => {
+  const app = useApp()
+
+  app?.use(express.json())
+  app?.use(express.text())
+  app?.use(express.urlencoded())
+})

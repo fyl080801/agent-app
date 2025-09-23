@@ -1,15 +1,8 @@
 import 'dotenv/config'
 import { config } from '@keystone-6/core'
 import { type TypeInfo } from '.keystone/types'
-import {
-  withAuth,
-  session,
-  lists,
-  extendExpressApp,
-  extendHttpServer,
-  db,
-} from './lib'
-import { useAppContext } from './lib/utils/core'
+import { withAuth, session, lists, db } from './lib'
+import { executeSetup, useInstance } from './lib'
 
 export default withAuth(
   config<TypeInfo>({
@@ -20,11 +13,15 @@ export default withAuth(
     lists,
     session,
     server: {
-      extendExpressApp: async (app, context) => {
-        await useAppContext(context)
-        extendExpressApp(app, context)
+      extendExpressApp: (app, context) => {
+        useInstance({ app })
+        useInstance({ context })
       },
-      extendHttpServer,
+      extendHttpServer: server => {
+        useInstance({ server })
+
+        executeSetup()
+      },
     },
   }),
 )

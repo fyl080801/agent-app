@@ -1,32 +1,12 @@
-// import { Strapi } from '@strapi/strapi';
-import { Express, RequestHandler } from 'express'
-import type { KeystoneContext } from '@keystone-6/core/types'
-import { initCurrentContext } from './context'
-import { json, text, raw, urlencoded } from 'body-parser'
-import { config } from '@keystone-6/core'
-import { withAuth } from '../auth'
-import { type TypeInfo } from '.keystone/types'
-import { db } from '../db'
-import { lists } from '../schema'
-
-// export const useStrapi = (init?: Strapi) => {
-//   const context = initCurrentContext();
-
-//   if (!init) {
-//     return context.strapi;
-//   }
-
-//   context.strapi = init;
-
-//   return init;
-// };
+import { RequestHandler } from 'express'
+import { Context, initCurrentInstance } from './context'
 
 export const JsonAuth: RequestHandler = async (req, res, next) => {
-  const context = await useAppContext()
+  const context = useContext()
 
-  const { session } = await context.withRequest(req)
+  const payload = await context?.withRequest(req)
 
-  if (session) {
+  if (payload?.session) {
     return next()
   }
 
@@ -34,7 +14,7 @@ export const JsonAuth: RequestHandler = async (req, res, next) => {
 }
 
 // export const useApp = (init?: Express) => {
-//   const context = initCurrentContext()
+//   const context = initCurrentInstance()
 
 //   context.setups = context.setups || []
 
@@ -67,35 +47,44 @@ export const JsonAuth: RequestHandler = async (req, res, next) => {
 //   })
 // }
 
-export const useAppContext = async (
-  init?: KeystoneContext<TypeInfo>,
-): Promise<KeystoneContext<TypeInfo>> => {
-  const context = initCurrentContext()
+const setups: Array<() => void> = []
 
-  if (!init) {
-    if (context.application) {
-      return context.application
-    } else {
-      return new Promise(resolve => {
-        withAuth(
-          config({
-            db: {
-              ...db,
-              prismaClientPath: '.prisma/client',
-            },
-            lists,
-            server: {
-              extendExpressApp(app, context) {
-                resolve(context)
-              },
-            },
-          }),
-        )
-      })
-    }
+export const useInstance = (init?: Context): Context | undefined => {
+  const instance = initCurrentInstance()
+
+  if (init?.app) {
+    instance.app = init.app
   }
 
-  context.application = init
+  if (init?.context) {
+    instance.context = init.context
+  }
 
-  return init
+  if (init?.server) {
+    instance.server = init.server
+  }
+
+  return instance
+}
+
+export const useContext = () => {
+  return useInstance()?.context
+}
+
+export const useApp = () => {
+  return useInstance()?.app
+}
+
+export const useServer = () => {
+  return useInstance()?.server
+}
+
+export const setup = (setup: () => void) => {
+  setups.push(setup)
+}
+
+export const executeSetup = () => {
+  setups.forEach(setup => {
+    setup()
+  })
 }

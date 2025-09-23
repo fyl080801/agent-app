@@ -1,8 +1,11 @@
-import { useApp } from '../app'
+import { setup, useApp, useContext } from '../utils/core'
 
-useApp((app, context) => {
-  app.get('/api/model-providers', async (req, res) => {
-    const list = await context.query.ModelProvider.findMany({
+setup(() => {
+  const app = useApp()
+  const context = useContext()
+
+  app?.get('/api/model-providers', async (req, res) => {
+    const list = await context?.query.ModelProvider.findMany({
       query: 'id name endpoint defaultModel',
     })
 
