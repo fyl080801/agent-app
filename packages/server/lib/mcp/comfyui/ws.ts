@@ -267,6 +267,9 @@ export class ComfyuiWebsocket {
     this.isClosed = true
     clearInterval(this.timer)
 
+    // Reset EventTarget to remove all listeners and prevent memory leaks
+    this.events = new EventTarget()
+
     if (this.websocket) {
       try {
         if (

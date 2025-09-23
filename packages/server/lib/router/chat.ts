@@ -25,6 +25,11 @@ setup(app => {
       clearInterval(keepAlive)
     })
 
+    // Cleanup on response error
+    res.on('error', () => {
+      clearInterval(keepAlive)
+    })
+
     return keepAlive
   }
 

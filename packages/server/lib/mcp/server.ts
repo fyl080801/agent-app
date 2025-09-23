@@ -128,53 +128,60 @@ export const startFastMcp = async (
   context?: KeystoneContext<TypeInfo>,
   port?: number,
 ) => {
-  const targetPort = Number(port || MCP_PORT)
+  try {
+    const targetPort = Number(port || MCP_PORT)
 
-  // console.log(`Checking if port ${targetPort} is available...`)
-  // const isAvailable = await ensurePortAvailable(targetPort)
+    // console.log(`Checking if port ${targetPort} is available...`)
+    // const isAvailable = await ensurePortAvailable(targetPort)
 
-  // if (!isAvailable) {
-  //   console.warn(
-  //     `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`,
-  //   )
-  // } else {
-  //   console.log(`Port ${targetPort} is available`)
-  // }
+    // if (!isAvailable) {
+    //   console.warn(
+    //     `Warning: Port ${targetPort} may still be occupied, attempting to start server anyway...`,
+    //   )
+    // } else {
+    //   console.log(`Port ${targetPort} is available`)
+    // }
 
-  if (isServerStarted && serverInstance) {
-    try {
-      console.log('mcp stoping')
-      await serverInstance.stop()
-    } catch (error) {
-      console.warn('Failed to stop previous MCP server:', error)
+    if (isServerStarted && serverInstance) {
+      try {
+        console.log('mcp stoping')
+        await serverInstance.stop()
+      } catch (error) {
+        console.warn('Failed to stop previous MCP server:', error)
+      }
     }
+
+    const server = new FastMCP({
+      name: 'ComfyUI',
+      version: '0.1.0',
+    })
+
+    context &&
+      (await Promise.all(
+        fastsetups.map(async setup => {
+          await Promise.resolve(setup(server, context))
+        }),
+      ))
+
+    await server.start({
+      transportType: 'httpStream',
+      httpStream: {
+        port: targetPort,
+        endpoint: '/mcp',
+        host: MCP_HOST,
+      },
+    })
+
+    serverInstance = server
+    isServerStarted = true
+
+    return server
+  } catch (error) {
+    console.error('Error starting MCP server:', error)
+    throw new Error(
+      `Failed to start MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
-
-  const server = new FastMCP({
-    name: 'ComfyUI',
-    version: '0.1.0',
-  })
-
-  context &&
-    (await Promise.all(
-      fastsetups.map(async setup => {
-        await Promise.resolve(setup(server, context))
-      }),
-    ))
-
-  await server.start({
-    transportType: 'httpStream',
-    httpStream: {
-      port: targetPort,
-      endpoint: '/mcp',
-      host: MCP_HOST,
-    },
-  })
-
-  serverInstance = server
-  isServerStarted = true
-
-  return server
 }
 
 export const getFastMcp = () => {
@@ -182,7 +189,14 @@ export const getFastMcp = () => {
 }
 
 export const stopFastMcp = async () => {
-  await getFastMcp()?.stop()
+  try {
+    await getFastMcp()?.stop()
+  } catch (error) {
+    console.error('Error stopping MCP server:', error)
+    throw new Error(
+      `Failed to stop MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  }
 }
 
 export const useFastMcp = (setup: FastMcpSetup) => {
