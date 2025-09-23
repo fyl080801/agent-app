@@ -60,22 +60,24 @@ export default () => {
     pageSize: 10,
     total: 0,
   })
-  const client = useComfyToolClient()
+  // const client = useComfyToolClient()
   const router = useRouter()
 
   const loadTools = async (current = 1, pageSize = 10) => {
     setLoading(true)
     try {
-      const result = await client.list({
-        current,
-        pageSize,
+      const data = await api.get('/ComfyTool', {
+        params: {
+          current,
+          pageSize,
+        },
       })
 
-      setTools(result.items)
+      setTools(data.items)
       setPagination({
         current,
         pageSize,
-        total: result.total,
+        total: data.total,
       })
     } catch (error) {
       console.log(error)

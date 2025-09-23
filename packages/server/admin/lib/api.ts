@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios'
 
 // API 响应基础接口
 export interface ApiResponse<T = any> {
@@ -44,27 +49,27 @@ class ApiClient {
         // }
         return config
       },
-      (error) => {
+      error => {
         return Promise.reject(error)
-      }
+      },
     )
 
     // 响应拦截器
     this.instance.interceptors.response.use(
-      (response: AxiosResponse) => {
+      (response: AxiosResponse | any) => {
         // 统一处理响应数据
         if (response.data && typeof response.data === 'object') {
           return response.data
         }
         return response
       },
-      (error) => {
+      error => {
         // 统一错误处理
         if (error.response) {
           // 服务器返回错误状态码
           const { status, data } = error.response
           const errorMessage = data?.message || error.message || '请求失败'
-          
+
           return Promise.reject({
             code: status,
             message: errorMessage,
@@ -85,32 +90,50 @@ class ApiClient {
             data: null,
           })
         }
-      }
+      },
     )
   }
 
   // GET 请求
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async get<T = any>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T> | T> {
     return this.instance.get(url, config)
   }
 
   // POST 请求
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T> | T> {
     return this.instance.post(url, data, config)
   }
 
   // PUT 请求
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T> | T> {
     return this.instance.put(url, data, config)
   }
 
   // DELETE 请求
-  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async delete<T = any>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T> | T> {
     return this.instance.delete(url, config)
   }
 
   // PATCH 请求
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T> | T> {
     return this.instance.patch(url, data, config)
   }
 

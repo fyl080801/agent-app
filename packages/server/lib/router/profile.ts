@@ -1,11 +1,10 @@
-import { setup, useApp, useContext } from '../utils/core'
+import { setup } from '../utils/core'
 
-setup(() => {
-  const app = useApp()
-  const context = useContext()
-
+setup((app, context) => {
   app?.get('/api/model-providers', async (req, res) => {
-    const list = await context?.query.ModelProvider.findMany({
+    const list = await (
+      await context.withRequest(req, res)
+    )?.query.ModelProvider.findMany({
       query: 'id name endpoint defaultModel',
     })
 

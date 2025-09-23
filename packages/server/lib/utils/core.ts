@@ -1,10 +1,17 @@
 import { RequestHandler } from 'express'
 import { Context, initCurrentInstance } from './context'
+import { getContext } from '@keystone-6/core/context'
+import keystone from '../../keystone'
+import PrismaModels from '.prisma/client'
+import express from 'express'
+import { KeystoneContext } from '@keystone-6/core/types'
+import { type TypeInfo } from '.keystone/types'
+import http from 'http'
 
 export const JsonAuth: RequestHandler = async (req, res, next) => {
   const context = useContext()
 
-  const payload = await context?.withRequest(req)
+  const payload = await context.withRequest(req)
 
   if (payload?.session) {
     return next()
@@ -47,7 +54,18 @@ export const JsonAuth: RequestHandler = async (req, res, next) => {
 //   })
 // }
 
-const setups: Array<() => void> = []
+const setups: Array<
+  (app: express.Express, context: KeystoneContext<TypeInfo>) => void
+> = []
+
+const postSetups: Array<
+  (
+    server: http.Server<
+      typeof http.IncomingMessage,
+      typeof http.ServerResponse
+    >,
+  ) => void
+> = []
 
 export const useInstance = (init?: Context): Context | undefined => {
   const instance = initCurrentInstance()
@@ -60,31 +78,40 @@ export const useInstance = (init?: Context): Context | undefined => {
     instance.context = init.context
   }
 
-  if (init?.server) {
-    instance.server = init.server
-  }
-
   return instance
 }
 
 export const useContext = () => {
-  return useInstance()?.context
+  return useInstance()?.context || getContext(keystone, PrismaModels)
 }
 
 export const useApp = () => {
   return useInstance()?.app
 }
 
-export const useServer = () => {
-  return useInstance()?.server
-}
-
-export const setup = (setup: () => void) => {
+export const setup = (
+  setup: (app: express.Express, context: KeystoneContext<TypeInfo>) => void,
+) => {
   setups.push(setup)
 }
 
-export const executeSetup = () => {
+export const executeSetup = (
+  app: express.Express,
+  context: KeystoneContext<TypeInfo>,
+) => {
   setups.forEach(setup => {
-    setup()
+    const post = setup(app, context)
+
+    if (typeof post === 'function') {
+      postSetups.push(post)
+    }
+  })
+}
+
+export const executePostSetup = (
+  server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+) => {
+  postSetups.forEach(setup => {
+    setup(server)
   })
 }

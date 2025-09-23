@@ -5,9 +5,7 @@ import OpenAI from 'openai/index.js'
 import { getModelProvider } from '../service/profile'
 import { setup, useApp } from '../utils/core'
 
-setup(() => {
-  const app = useApp()
-
+setup(app => {
   // SSE helper function
   function setupSSE(req: Request, res: Response) {
     res.writeHead(200, {
@@ -31,7 +29,7 @@ setup(() => {
   }
 
   // SSE streaming chat completion endpoint
-  app?.post('/api/chat/stream', async (req, res) => {
+  app.post('/api/chat/stream', async (req, res) => {
     try {
       const { messages, model, temperature, state } = req.body
 
