@@ -3,7 +3,8 @@ import { ChatCompletionMessageParam } from 'openai/resources'
 import { OpenAIService } from '../agents'
 import OpenAI from 'openai/index.js'
 import { getModelProvider } from '../service/profile'
-import { setup, useApp } from '../utils/core'
+import { setup } from '../utils/core'
+import { openai } from '@llamaindex/openai'
 
 setup(app => {
   // SSE helper function
@@ -47,6 +48,13 @@ setup(app => {
 
       const provider = await getModelProvider()
 
+      const llm = openai({
+        baseURL: provider.baseURL,
+        apiKey: provider.apiKey,
+        model: model || state.model || provider.defaultModel,
+        temperature: temperature || state.temperature,
+      })
+
       const openAIService = new OpenAIService(
         new OpenAI({
           baseURL: provider.baseURL,
@@ -63,6 +71,15 @@ setup(app => {
           res.write(chunk)
         },
       )
+
+      // const { stream } = await llm.exec({
+      //   messages,
+      //   stream: true,
+      // })
+
+      // for await (const chunk of stream) {
+      //   res.write(JSON.stringify(chunk))
+      // }
 
       // End the stream
       clearInterval(keepAlive)

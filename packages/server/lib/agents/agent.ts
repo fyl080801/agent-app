@@ -12,10 +12,10 @@ import { EventEncoder } from '@ag-ui/encoder'
 import { OPENAI_API_KEY } from '../envs'
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-  baseURL: 'http://127.0.0.1:1234/v1',
-  apiKey: OPENAI_API_KEY, // Make sure to set your API key in environment variables
-})
+// const openai = new OpenAI({
+//   baseURL: 'http://127.0.0.1:1234/v1',
+//   apiKey: OPENAI_API_KEY, // Make sure to set your API key in environment variables
+// })
 
 /**
  * OpenAI Service for making API requests

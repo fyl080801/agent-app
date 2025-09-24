@@ -1,28 +1,28 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount, unref } from "vue"
-import { BubbleList, EditorSender } from "vue-element-plus-x"
-import { HttpAgent } from "@ag-ui/client"
-import type { SubmitResult } from "vue-element-plus-x/types/EditorSender"
-import type { BubbleListItemProps } from "vue-element-plus-x/types/BubbleList"
+import { ref, onMounted, onBeforeUnmount, unref } from 'vue'
+import { BubbleList, EditorSender } from 'vue-element-plus-x'
+import { HttpAgent } from '@ag-ui/client'
+import type { SubmitResult } from 'vue-element-plus-x/types/EditorSender'
+import type { BubbleListItemProps } from 'vue-element-plus-x/types/BubbleList'
 
 const senderRef = ref()
 const sending = ref(false)
 const messages = ref<BubbleListItemProps[]>([])
 const agent = new HttpAgent({
-  url: "/api/chat/stream",
+  url: '/api/chat/stream',
   headers: {
-    "Content-Type": "application/json"
+    'Content-Type': 'application/json',
   },
   initialState: {
-    model: "openai/gpt-oss-120b"
-  }
+    model: 'openai/gpt-oss-120b',
+  },
 })
 
 const sendMessage = async (payload: SubmitResult) => {
   agent.addMessage({
-    role: "user",
+    role: 'user',
     content: payload.text,
-    id: "1"
+    id: '1',
   })
 
   unref(senderRef).clear()
@@ -53,28 +53,28 @@ const startSubscribe = () => {
     },
 
     onTextMessageStartEvent(e) {
-      messages.value = e.messages.map((item) => ({
-        placement: item.role === "user" ? "end" : "start",
-        content: item.content
+      messages.value = e.messages.map(item => ({
+        placement: item.role === 'user' ? 'end' : 'start',
+        content: item.content,
       }))
 
       messages.value.push({
         loading: true,
-        placement: "start"
+        placement: 'start',
       })
     },
 
     onTextMessageContentEvent(e) {
-      messages.value = e.messages.map((item) => {
+      messages.value = e.messages.map(item => {
         return {
-          placement: item.role === "user" ? "end" : "start",
+          placement: item.role === 'user' ? 'end' : 'start',
           content: item.content,
-          isMarkdown: true
+          isMarkdown: true,
         }
       })
     },
 
-    onTextMessageEndEvent() {}
+    onTextMessageEndEvent() {},
   })
 
   return () => {
@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
   @apply w-[8px] h-[8px];
   @apply rounded-[50%];
 
-  @apply bg-[9ca3af];
+  @apply bg-[#9ca3af];
 }
 
 .status-indicator.online {
