@@ -179,7 +179,7 @@ export const startFastMcp = async (
   } catch (error) {
     console.error('Error starting MCP server:', error)
     throw new Error(
-      `Failed to start MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to start MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`,
     )
   }
 }
@@ -194,7 +194,7 @@ export const stopFastMcp = async () => {
   } catch (error) {
     console.error('Error stopping MCP server:', error)
     throw new Error(
-      `Failed to stop MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to stop MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`,
     )
   }
 }

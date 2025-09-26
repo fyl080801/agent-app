@@ -1,3 +1,8 @@
+packages:
+  - packages/*
+
+injectWorkspacePackages: true
+
 onlyBuiltDependencies:
   - '@apollo/protobufjs'
   - '@parcel/watcher'
@@ -6,12 +11,8 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild
   - prisma
+  - tree-sitter
   - vue-demi
-
-packages:
-  - packages/*
 
 syncInjectedDepsAfterScripts:
   - build
-
-injectWorkspacePackages: true

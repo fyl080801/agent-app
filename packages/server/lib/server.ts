@@ -20,15 +20,17 @@ setup(app => {
   )
 })
 
-// setup(app => {
-//   app.use((req, res, next) => {
-//     try {
-//       next()
-//     } catch (err) {
-//       console.error('Server error:', err)
-//       res.status(500).json({
-//         error: err instanceof Error ? err.message : 'Internal server error',
-//       })
-//     }
-//   })
-// })
+setup(app => {
+  app.use(async (req, res, next) => {
+    try {
+      await Promise.resolve(next())
+    } catch (err) {
+      console.log('~~~~~~~~~error')
+      console.error('Server error:', err)
+      res.status(500).json({
+        error: err instanceof Error ? err.message : 'Internal server error',
+      })
+      res.end()
+    }
+  })
+})
