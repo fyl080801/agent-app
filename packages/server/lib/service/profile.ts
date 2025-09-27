@@ -6,6 +6,7 @@ export const getModelProvider = async () => {
   const context = useContext()
 
   const defaultProvider = {
+    name: 'default',
     baseURL: DEFAULT_BASE_URL,
     apiKey: DEFAULT_API_KEY,
     defaultModel: DEFAULT_MODEL,
@@ -34,6 +35,7 @@ export const getModelProvider = async () => {
   }
 
   return {
+    name: provider.name,
     baseURL: provider.endpoint,
     apiKey: provider.apiKey,
     defaultModel: provider.defaultModel,

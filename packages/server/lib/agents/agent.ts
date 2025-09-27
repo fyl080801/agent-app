@@ -1,5 +1,8 @@
 import OpenAI from 'openai'
-import { ChatCompletionMessageParam } from 'openai/resources'
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources'
 import {
   EventSchemas,
   EventType,
@@ -118,19 +121,24 @@ class OpenAIService {
    * @param onChunk - Callback function to handle each chunk of the response
    * @returns Promise resolving to the complete response content
    */
-  async streamChatCompletion(
-    messages: ChatCompletionMessageParam[],
-    model: string = 'gpt-4-turbo',
-    temperature: number = 0.7,
-    onChunk?: (chunk: string) => void,
-  ): Promise<string> {
+  async streamChatCompletion(params: {
+    messages: ChatCompletionMessageParam[]
+    model: string
+    temperature?: number
+    tools?: Array<ChatCompletionTool>
+    onChunk?: (chunk: string) => void
+  }): Promise<string> {
     try {
+      const { messages, model, temperature = 0.7, tools = [], onChunk } = params
+
       const stream = await this.client.chat.completions.create({
         model,
         messages,
         temperature,
         max_tokens: 1000,
         stream: true,
+        tools,
+        tool_choice: 'auto',
       })
 
       let fullContent = ''
@@ -251,6 +259,180 @@ class OpenAIService {
       console.error('OpenAI Streaming API Error:', error)
       throw new Error(
         `Failed to stream text generation from OpenAI: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+    }
+  }
+
+  /**
+   * Execute a tool call with OpenAI
+   * @param messages - Array of messages for the conversation
+   * @param tools - Array of tools available for the model to call
+   * @param model - The model to use (default: gpt-4-turbo)
+   * @param temperature - Sampling temperature (default: 0.7)
+   * @returns Promise resolving to the AI response with tool calls
+   */
+  async toolCall(
+    messages: ChatCompletionMessageParam[],
+    tools: OpenAI.Chat.Completions.ChatCompletionTool[],
+    model: string = 'gpt-4-turbo',
+    temperature: number = 0.7,
+  ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model,
+        messages,
+        temperature,
+        tools,
+        tool_choice: 'auto', // Let the model decide which tool to use
+      })
+
+      return response
+    } catch (error) {
+      console.error('OpenAI Tool Call Error:', error)
+      throw new Error(
+        `Failed to execute tool call with OpenAI: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+    }
+  }
+
+  /**
+   * Stream a tool call response from OpenAI
+   * @param messages - Array of messages for the conversation
+   * @param tools - Array of tools available for the model to call
+   * @param model - The model to use (default: gpt-4-turbo)
+   * @param temperature - Sampling temperature (default: 0.7)
+   * @param onChunk - Callback function to handle each chunk of the response
+   * @returns Promise resolving to the complete response content
+   */
+  async streamToolCall(
+    messages: ChatCompletionMessageParam[],
+    tools: OpenAI.Chat.Completions.ChatCompletionTool[],
+    model: string = 'gpt-4-turbo',
+    temperature: number = 0.7,
+    onChunk?: (chunk: string) => void,
+  ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+    try {
+      const stream = await this.client.chat.completions.create({
+        model,
+        messages,
+        temperature,
+        tools,
+        tool_choice: 'auto', // Let the model decide which tool to use
+        stream: true,
+      })
+
+      let fullContent = ''
+      const messageId = this.generateRandomMessageId()
+
+      // must be from request
+      const threadId = this.generateRandomMessageId()
+      const runId = this.generateRandomMessageId()
+
+      const encoder = new EventEncoder({})
+
+      const onSubscribe = onChunk || ((chunk: string) => {})
+
+      onSubscribe(
+        encoder.encode(
+          EventSchemas.parse({
+            type: EventType.RUN_STARTED,
+            threadId,
+            runId,
+          } as RunStartedEvent),
+        ),
+      )
+
+      onSubscribe(
+        encoder.encode(
+          EventSchemas.parse({
+            type: EventType.TEXT_MESSAGE_START,
+            messageId: messageId,
+            role: 'assistant',
+          } as TextMessageStartEvent),
+        ),
+      )
+
+      // We'll collect the full response to return it
+      let fullResponse: OpenAI.Chat.Completions.ChatCompletion | null = null
+
+      for await (const chunk of stream) {
+        // If this is a streaming chunk, collect content
+        if ('choices' in chunk) {
+          const content = chunk.choices[0]?.delta?.content || ''
+          fullContent += content
+
+          // Call the onChunk callback if provided
+          content &&
+            onSubscribe(
+              encoder.encode(
+                EventSchemas.parse({
+                  type: EventType.TEXT_MESSAGE_CONTENT,
+                  messageId: messageId,
+                  delta: content,
+                } as TextMessageContentEvent),
+              ),
+            )
+
+          // Store the last chunk to build our final response
+          if (!fullResponse) {
+            fullResponse = {
+              id: chunk.id,
+              choices: [],
+              created: chunk.created,
+              model: chunk.model,
+              object: 'chat.completion',
+            } as OpenAI.Chat.Completions.ChatCompletion
+          }
+
+          // Merge choices
+          chunk.choices.forEach((choice, index) => {
+            if (!fullResponse!.choices[index]) {
+              fullResponse!.choices[index] = {
+                index: choice.index,
+                message: {
+                  role: 'assistant',
+                  content: '',
+                },
+              } as OpenAI.Chat.Completions.ChatCompletion.Choice
+            }
+            if (choice.delta?.content) {
+              fullResponse!.choices[index].message.content =
+                (fullResponse!.choices[index].message.content || '') +
+                choice.delta.content
+            }
+          })
+        }
+      }
+
+      onSubscribe(
+        encoder.encode(
+          EventSchemas.parse({
+            type: EventType.TEXT_MESSAGE_END,
+            messageId: messageId,
+          }),
+        ),
+      )
+
+      onSubscribe(
+        encoder.encode(
+          EventSchemas.parse({
+            type: EventType.RUN_FINISHED,
+            threadId,
+            runId,
+          } as RunFinishedEvent),
+        ),
+      )
+
+      // Return the complete response
+      return fullResponse || ({} as OpenAI.Chat.Completions.ChatCompletion)
+    } catch (error) {
+      console.error('OpenAI Streaming Tool Call Error:', error)
+      throw new Error(
+        `Failed to stream tool call response from OpenAI: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`,
       )

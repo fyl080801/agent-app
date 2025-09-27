@@ -145,6 +145,9 @@ importers:
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
+      mcp-client:
+        specifier: ^1.13.1
+        version: 1.13.1
       next:
         specifier: ^14.2.32
         version: 14.2.32(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.92.1)
@@ -4010,6 +4013,9 @@ packages:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
+  mcp-client@1.13.1:
+    resolution: {integrity: sha512-ossu3uW853gyFv8sJeLe12XLupgtyYS8+XyjG8PIhT1R3r9ZNl9MkLPUCQjhdFNEStpXSj9N3wmHOSFwQ+0k3A==}
+
   mcp-proxy@5.6.0:
     resolution: {integrity: sha512-sms4GHO/sX2d0uTdiUVOLXJMpNRc+4VZAdIRpj+DUZJovGXtXaYwF4YM1BTcQeCKEJkfwGPHoO24AQlR0TWOqA==}
     hasBin: true
@@ -5065,6 +5071,10 @@ packages:
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
+
+  reconnecting-eventsource@1.6.4:
+    resolution: {integrity: sha512-0L3IS3wxcNFApTPPHkcbY8Aya7XZIpYDzhxa8j6QSufVkUN018XJKfh2ZaThLBGP/iN5UTz2yweMhkqr0PKa7A==}
+    engines: {node: '>=12.0.0'}
 
   redent@3.0.0:
     resolution: {integrity: sha512-6tDA8g98We0zd0GvVeMT9arEOnTw9qM03L9cJXaCjrip1OO764RDBLBfrB4cwzNGDj5OA5ioymC9GkizgWJDUg==}
@@ -10583,6 +10593,15 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
+  mcp-client@1.13.1:
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.18.2
+      reconnecting-eventsource: 1.6.4
+      strict-event-emitter-types: 2.0.0
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - supports-color
+
   mcp-proxy@5.6.0: {}
 
   mdast-util-find-and-replace@1.1.1:
@@ -11925,6 +11944,8 @@ snapshots:
       picomatch: 2.3.1
 
   readdirp@4.1.2: {}
+
+  reconnecting-eventsource@1.6.4: {}
 
   redent@3.0.0:
     dependencies:

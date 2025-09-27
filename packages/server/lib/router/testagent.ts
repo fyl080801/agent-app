@@ -1,11 +1,11 @@
 import { getModelProvider } from '../service/profile'
 import { setup } from '../utils/core'
 import { sse } from '../utils/http'
-import { streamText, tool } from 'ai'
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
+// import { streamText, tool } from 'ai'
+// import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 // import { OpenAI } from 'openai'
 import { createReactAgent } from '@langchain/langgraph/prebuilt'
-import { ChatOpenAI, OpenAI } from '@langchain/openai'
+import { ChatOpenAI } from '@langchain/openai'
 import { MultiServerMCPClient } from '@langchain/mcp-adapters'
 import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
 import { AgentAction, AgentFinish } from '@langchain/core/agents'
@@ -95,6 +95,8 @@ setup(app => {
         configuration: { baseURL: provider.baseURL, apiKey: provider.apiKey },
         model: model || provider.defaultModel,
         temperature,
+        reasoning: { effort: 'high' },
+        supportsStrictToolCalling: true,
         streaming: true,
       }),
       tools,
@@ -124,7 +126,7 @@ setup(app => {
     //   },
     // })
 
-    await agent.stream(
+    const response = await agent.invoke(
       {
         messages,
       },
@@ -134,6 +136,8 @@ setup(app => {
         // callbacks: new Callback(),
       },
     )
+
+    console.log(response)
 
     // for await (const chunk of stream) {
     //   res.write(JSON.stringify(chunk))

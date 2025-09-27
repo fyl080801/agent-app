@@ -34,14 +34,14 @@ setup(app => {
     )
 
     // Stream the response
-    await openAIService.streamChatCompletion(
-      messages as ChatCompletionMessageParam[],
-      model || state?.model || provider.defaultModel,
-      temperature || state?.temperature,
-      chunk => {
+    await openAIService.streamChatCompletion({
+      messages: messages as ChatCompletionMessageParam[],
+      model: model || state?.model || provider.defaultModel,
+      temperature: temperature || state?.temperature,
+      onChunk: chunk => {
         res.write(chunk)
       },
-    )
+    })
 
     // const { stream } = await llm.exec({
     //   messages,
