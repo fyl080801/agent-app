@@ -19,7 +19,7 @@ import { randomBytes } from 'node:crypto'
 import { createAuth } from '@keystone-6/auth'
 
 // see https://keystonejs.com/docs/apis/session for the session docs
-import { statelessSessions } from '@keystone-6/core/session'
+import { statelessSessions, storedSessions } from '@keystone-6/core/session'
 import { SESSION_SECRET } from './envs'
 
 // withAuth is a function we can use to wrap our base configuration
@@ -56,5 +56,10 @@ const session = statelessSessions({
   maxAge: sessionMaxAge,
   secret: SESSION_SECRET,
 })
+
+// const session = storedSessions({
+//   maxAge: sessionMaxAge,
+//   cookieName: '',
+// })
 
 export { withAuth, session }

@@ -12,6 +12,7 @@
   "dependencies": {
     "@ag-ui/core": "^0.0.37",
     "@ag-ui/encoder": "^0.0.37",
+    "@ai-sdk/openai": "^2.0.38",
     "@ai-sdk/openai-compatible": "^1.0.19",
     "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/provider-utils": "^3.0.10",

@@ -216,8 +216,8 @@ useFastMcp(async (server, context) => {
   server.addTool({
     name: 'comfyui_health_check',
     description: 'Check if ComfyUI service is available',
-    parameters: z.object({}),
-    execute: async (params, context) => {
+    // parameters: z.object({}),
+    execute: async () => {
       try {
         if (!COMFYUI_HOST) {
           return {
