@@ -51,10 +51,14 @@ setup(app => {
       const prompt = parsePromptTemplate(DEFAULT_TOOL_PROMPT, {
         TOOL_USE_EXAMPLES: DEFAULT_TOOL_USE_EXAMPLES,
         AVAILABLE_TOOLS: `<tools> 
-          ${Object.entries(tools).map(([key, values]) => `<tool> 
+          ${Object.entries(tools)
+            .map(
+              ([key, values]) => `<tool> 
             <name>${key}</name> 
             <description>${values.description}</description> <arguments>${JSON.stringify(values.inputSchema)}</arguments> 
-          </tool>`)} 
+          </tool>`,
+            )
+            .join('\n\n')} 
         </tools>`,
         USER_SYSTEM_PROMPT: '',
       })
@@ -62,28 +66,9 @@ setup(app => {
         model: chatModel,
         system: prompt,
         temperature,
-        messages: [
-          // {
-          //   role: 'system',
-          //   content: `
-
-          //         `,
-          // },
-          ...messages,
-        ],
+        messages: [...messages],
         toolChoice: 'required',
         tools,
-        // tools: {
-        //   random: tool({
-        //     description: '生成随机数',
-        //     inputSchema: z4.object({
-        //       a: z4.string(),
-        //     }),
-        //     execute({}) {
-        //       return random(false)
-        //     },
-        //   }),
-        // },
       })
 
       for await (const chunk of result.toUIMessageStream({})) {
