@@ -1,18 +1,10 @@
 import { setup } from '../utils/core'
 import { sse } from '../utils/http'
 import { getModelProvider } from '../service/profile'
-import { experimental_createMCPClient, stepCountIs, streamText, tool } from 'ai'
+import { convertToModelMessages, stepCountIs, streamText } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
-import { createOpenAI } from '@ai-sdk/openai'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
-import z from 'zod'
-import { random } from 'lodash-es'
-import z4 from 'zod/v4'
-import {
-  DEFAULT_TOOL_PROMPT,
-  DEFAULT_TOOL_USE_EXAMPLES,
-  parsePromptTemplate,
-} from '../prompt'
+import { parseToolCallAgentTemplate } from '../prompt'
+import { getMcpTools } from '../mcp/http'
 
 setup(app => {
   app.post('/api/chat/aitoolcall', sse(), async (req, res) => {
@@ -29,66 +21,93 @@ setup(app => {
       name: provider.name,
       supportsStructuredOutputs: true,
     })
-    // const openai = createOpenAI({
-    //   baseURL: provider.baseURL,
-    //   apiKey: provider.apiKey,
-    //   name: provider.name,
-    // })
+
     // 模型能力影响是否可以toolcall
-    const httpTransport = new StreamableHTTPClientTransport(
-      new URL('http://127.0.0.1:8000/mcp'),
-    )
-    const client = await experimental_createMCPClient({
-      transport: httpTransport,
-    })
+    const tools = await getMcpTools(req, res)
 
-    try {
-      const tools = await client.tools()
+    const executeAgent = async (messages: any[]) => {
+      const { resolve, reject, promise } = Promise.withResolvers()
 
-      const results = []
-      const reasoning = []
-      const chatModel = openai(model || provider.defaultModel)
-      const prompt = parsePromptTemplate(DEFAULT_TOOL_PROMPT, {
-        TOOL_USE_EXAMPLES: DEFAULT_TOOL_USE_EXAMPLES,
-        AVAILABLE_TOOLS: `<tools> 
-          ${Object.entries(tools)
-            .map(
-              ([key, values]) => `<tool> 
-            <name>${key}</name> 
-            <description>${values.description}</description> <arguments>${JSON.stringify(values.inputSchema)}</arguments> 
-          </tool>`,
-            )
-            .join('\n\n')} 
-        </tools>`,
-        USER_SYSTEM_PROMPT: '',
-      })
-      const result = streamText({
-        model: chatModel,
-        system: prompt,
-        temperature,
-        messages: [...messages],
-        toolChoice: 'required',
-        tools,
-      })
+      const innerMessages = [...messages]
 
-      for await (const chunk of result.toUIMessageStream({})) {
-        console.log(chunk)
-        if (chunk.type === 'reasoning-delta') {
-          reasoning.push((chunk as any).delta)
-        }
-        if (chunk.type === 'text-delta') {
-          results.push((chunk as any).delta)
-        }
-        res.write(JSON.stringify(chunk) + '\n\n')
+      const streamChat = (params: any = {}) => {
+        const { response } = streamText({
+          model: openai(model || provider.defaultModel),
+          system: parseToolCallAgentTemplate({ tools }),
+          temperature,
+          messages: innerMessages,
+          tools,
+          ...params,
+          stopWhen: [
+            stepCountIs(1),
+            // ({ steps }) => {
+            //   const lastStep = steps[steps?.length - 1]
+
+            //   return !lastStep.toolResults.length
+            // },
+          ],
+          onChunk: event => {
+            console.log(event.chunk)
+
+            res.write('data: ' + JSON.stringify(event.chunk) + '\n\n')
+
+            if (event.chunk.type === 'tool-result') {
+              const {
+                input,
+                output,
+                toolCallId,
+                type,
+                preliminary,
+                providerExecuted,
+              } = event.chunk
+
+              innerMessages.push(
+                ...convertToModelMessages([
+                  {
+                    role: 'assistant',
+                    parts: [
+                      {
+                        input,
+                        output,
+                        toolCallId,
+                        type,
+                        preliminary,
+                        providerExecuted,
+                        state: 'output-available',
+                      },
+                    ],
+                  },
+                ]),
+              )
+            }
+          },
+          onError: event => {
+            reject(event.error)
+          },
+          onFinish: event => {
+            if (event.finishReason === 'error') return
+
+            if (event.finishReason !== 'stop') {
+              // 再判断一下文本里有没有prompt定义的toolcall，如果如有就调toolcall并推送一下
+
+              streamChat()
+              return
+            }
+
+            resolve(event.response)
+          },
+        })
+
+        response.then(() => {})
       }
 
-      // console.log(await result.toolCalls)
-      console.log(reasoning.join(''))
-      console.log(results.join(''))
+      streamChat()
 
-      res.end()
-    } finally {
-      client.close()
+      return promise
     }
+
+    await executeAgent(messages)
+
+    res.end()
   })
 })

@@ -1,6 +1,15 @@
 // 因为对于toolcall来说依赖模型能力，为了让模型有统一处理，一律使用prompt控制toolcall输出
 // 直接抄cherry-studio的作业吧
 
+/**
+工具定义可加到 ## Tool Use Examples 下，但agent本身传了tools貌似可以不加
+
+## Tool Use Available Tools
+Above example were using notional tools that might not exist for you. You only have access to these tools:
+{{ AVAILABLE_TOOLS }}
+
+ */
+
 export const DEFAULT_TOOL_PROMPT = `
 In this environment you have access to a set of tools you can use to answer the user's question. \\
 You can use one tool per message, and will receive the result of that tool use in the user's response. You use tools step-by-step to accomplish a given task, with each tool use informed by the result of the previous tool use.
@@ -37,9 +46,6 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## Tool Use Examples
 {{ TOOL_USE_EXAMPLES }}
 
-## Tool Use Available Tools
-Above example were using notional tools that might not exist for you. You only have access to these tools:
-{{ AVAILABLE_TOOLS }}
 
 ## Tool Use Rules
 Here are the rules you should always follow to solve your task:
@@ -137,6 +143,38 @@ export const parsePromptTemplate = (
       .replaceAll(`{{${key}}}`, value)
       .replaceAll(`{{ ${key} }}`, value)
   }, prompt)
+}
+
+export const parseToolsTemplage = (tools: Record<string, any> = {}) => {
+  return `
+<tools> 
+  ${Object.entries(tools)
+    .map(([key, values]) => {
+      return `
+  <tool> 
+    <name>${key}</name> 
+    <description>${values.description}</description> 
+    <arguments>${JSON.stringify(values.inputSchema)}</arguments> 
+  </tool>`
+    })
+    .join('\n\n')} 
+</tools>`
+}
+
+interface TooCallTemplateParams {
+  prompt?: string
+  tools: Record<string, any> // { [key: string]: any }
+}
+
+export const parseToolCallAgentTemplate = ({
+  prompt = '',
+  tools,
+}: TooCallTemplateParams): string => {
+  return parsePromptTemplate(DEFAULT_TOOL_PROMPT, {
+    TOOL_USE_EXAMPLES: DEFAULT_TOOL_USE_EXAMPLES,
+    AVAILABLE_TOOLS: parseToolsTemplage(tools),
+    USER_SYSTEM_PROMPT: prompt,
+  })
 }
 
 // XML解析相关的类型定义

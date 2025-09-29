@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 
 export function setupSSE(req: Request, res: Response) {
+  // if (!req.accepts('text/event-stream')) return
+
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',

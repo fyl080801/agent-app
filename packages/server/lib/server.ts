@@ -1,6 +1,7 @@
 import { startFastMcp } from './mcp'
 import { setup } from './utils/core'
 import express from 'express'
+// import { onEnd, releaseRequestContext, useRequestContext } from './utils/http'
 
 // mcp server
 setup((app, context) => {
@@ -30,7 +31,6 @@ setup(app => {
       res.status(500).json({
         error: err instanceof Error ? err.message : 'Internal server error',
       })
-      res.end()
     }
   })
 })
