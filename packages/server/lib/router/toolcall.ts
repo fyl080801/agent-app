@@ -3,8 +3,9 @@ import { sse } from '../utils/http'
 import { getModelProvider } from '../service/profile'
 import { convertToModelMessages, stepCountIs, streamText } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
-import { parseToolCallAgentTemplate } from '../prompt'
+// import { parseToolCallAgentTemplate } from '../prompt'
 import { getMcpTools } from '../mcp/http'
+import { pick } from 'lodash-es'
 
 setup(app => {
   app.post('/api/chat/aitoolcall', sse(), async (req, res) => {
@@ -15,7 +16,7 @@ setup(app => {
     }
 
     const provider = await getModelProvider()
-    const openai = createOpenAICompatible({
+    const openaiCompatible = createOpenAICompatible({
       baseURL: provider.baseURL,
       apiKey: provider.apiKey,
       name: provider.name,
@@ -32,47 +33,34 @@ setup(app => {
 
       const streamChat = (params: any = {}) => {
         const { response } = streamText({
-          model: openai(model || provider.defaultModel),
-          system: parseToolCallAgentTemplate({ tools }),
+          model: openaiCompatible(model || provider.defaultModel),
+          // system: parseToolCallAgentTemplate({ tools }),
           temperature,
           messages: innerMessages,
           tools,
           ...params,
-          stopWhen: [
-            stepCountIs(1),
-            // ({ steps }) => {
-            //   const lastStep = steps[steps?.length - 1]
-
-            //   return !lastStep.toolResults.length
-            // },
-          ],
+          stopWhen: [stepCountIs(1)],
           onChunk: event => {
             console.log(event.chunk)
 
             res.write('data: ' + JSON.stringify(event.chunk) + '\n\n')
 
             if (event.chunk.type === 'tool-result') {
-              const {
-                input,
-                output,
-                toolCallId,
-                type,
-                preliminary,
-                providerExecuted,
-              } = event.chunk
-
               innerMessages.push(
                 ...convertToModelMessages([
                   {
                     role: 'assistant',
                     parts: [
                       {
-                        input,
-                        output,
-                        toolCallId,
-                        type,
-                        preliminary,
-                        providerExecuted,
+                        ...pick(
+                          event.chunk,
+                          'input',
+                          'output',
+                          'toolCallId',
+                          'type',
+                          'preliminary',
+                          'providerExecuted',
+                        ),
                         state: 'output-available',
                       },
                     ],
@@ -98,7 +86,9 @@ setup(app => {
           },
         })
 
-        response.then(() => {})
+        response.then(result => {
+          // res.write('data: ' + JSON.stringify(result))
+        })
       }
 
       streamChat()
