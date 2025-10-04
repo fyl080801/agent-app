@@ -34,5 +34,7 @@ export const sse =
 
     await Promise.resolve(next())
 
-    clearInterval(keepAlive)
+    res.on('finish', () => {
+      clearInterval(keepAlive)
+    })
   }
