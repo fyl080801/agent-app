@@ -10,8 +10,8 @@
     "start": "keystone start --with-migrations"
   },
   "dependencies": {
-    "@ag-ui/core": "^0.0.37",
-    "@ag-ui/encoder": "^0.0.37",
+    "@ag-ui/core": "^0.0.39",
+    "@ag-ui/encoder": "^0.0.39",
     "@ai-sdk/openai": "^2.0.38",
     "@ai-sdk/openai-compatible": "^1.0.19",
     "@ai-sdk/provider": "^2.0.0",
@@ -27,7 +27,7 @@
     "@langchain/openai": "^0.6.13",
     "@modelcontextprotocol/sdk": "^1.18.2",
     "@prisma/client": "^6.16.2",
-    "ai": "^5.0.55",
+    "ai": "^5.0.60",
     "axios": "^1.12.0",
     "body-parser": "^2.2.0",
     "dayjs": "^1.11.18",
