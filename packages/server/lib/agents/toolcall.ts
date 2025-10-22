@@ -1,5 +1,15 @@
-import { convertToModelMessages, stepCountIs, streamText, ToolSet } from 'ai'
+import { EventEncoder } from '@ag-ui/encoder'
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  StreamTextOnChunkCallback,
+  TextStreamPart,
+  ToolSet,
+} from 'ai'
 import { pick } from 'lodash-es'
+import { EventEmitter } from 'node:events'
+import { EventSchemas, EventType, ThinkingStartEvent } from '@ag-ui/core'
 
 /**
  * Configuration for the ToolCallAgent.
@@ -9,20 +19,21 @@ export interface ToolCallAgentConfig {
   temperature: number
   tools: ToolSet
   onChunk: (chunk: any) => void // TODO: Define chunk type
+  onEventStart?: (type: string) => void
+  onEventEnd?: (type: string) => void
 }
 
-/**
- * Represents a chunk from the AI stream.
- */
-interface StreamChunk {
-  type: string
-  input?: any
-  output?: any
-  toolCallId?: string
-  toolName?: string
-  preliminary?: boolean
-  providerExecuted?: boolean
-}
+type KnownMessageTypes =
+  | 'text-delta'
+  | 'reasoning-delta'
+  | 'source'
+  | 'tool-call'
+  | 'tool-input-start'
+  | 'tool-input-delta'
+  | 'tool-result'
+  | 'raw'
+
+type AgentEvents = 'event-start' | 'event-end' | 'event-process'
 
 /**
  * Agent responsible for handling tool calls in AI conversations.
@@ -31,10 +42,47 @@ interface StreamChunk {
 export class ToolCallAgent {
   private config: ToolCallAgentConfig
   private innerMessages: any[] = []
+  private encoder: EventEncoder
+  private events: EventEmitter<{
+    'event-start': string[]
+    'event-end': string[]
+    'event-process': string[]
+  }>
+
+  private eventStart: StreamTextOnChunkCallback<ToolSet> = () => {}
+
+  private eventEnd = (event: KnownMessageTypes) => {
+    this.events.emit('event-end')
+  }
+
+  private eventProcess: StreamTextOnChunkCallback<ToolSet> = () => {}
+
+  // private encodeEventType<TOOLS extends ToolSet>(
+  //   type: KnownTypes,
+  //   chunk: Extract<
+  //     TextStreamPart<TOOLS>,
+  //     {
+  //       type: KnownTypes
+  //     }
+  //   >,
+  // ) {
+  //   if (type === 'reasoning-delta') {
+  //     return this.encoder.encode(
+  //       EventSchemas.parse({
+  //         timestamp: new Date().valueOf(),
+  //         type: EventType.THINKING_START,
+  //       } as ThinkingStartEvent),
+  //     )
+  //   }
+  // }
 
   constructor(config: ToolCallAgentConfig) {
     this.config = config
+    this.encoder = new EventEncoder({})
+    this.events = new EventEmitter({})
   }
+
+  on(type: AgentEvents) {}
 
   /**
    * Executes the tool call agent with the given messages.
@@ -55,6 +103,8 @@ export class ToolCallAgent {
       iterationCount++
       continueStreaming = false
 
+      let currentEvent: KnownMessageTypes
+
       const { response } = streamText({
         model: this.config.model,
         temperature: this.config.temperature,
@@ -63,7 +113,20 @@ export class ToolCallAgent {
         stopWhen: [stepCountIs(1)],
         onChunk: event => {
           console.log('Chunk received:', event.chunk)
-          this.config.onChunk(event.chunk)
+
+          if (currentEvent !== event.chunk.type) {
+            if (currentEvent) {
+              this.eventEnd(currentEvent)
+            }
+
+            currentEvent = event.chunk.type
+
+            this.eventStart(event)
+          } else {
+            this.eventProcess(event)
+          }
+
+          // this.events.emit('chunk', this.encoder.encode(EventSchemas.parse({})))
 
           if (event.chunk.type === 'tool-result') {
             this.innerMessages.push(
