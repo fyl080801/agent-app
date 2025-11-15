@@ -10,7 +10,11 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN pnpm install --frozen-lockfile
 RUN pnpm run -r build
+RUN cd packages/server && pnpm prisma generate
 RUN pnpm deploy --filter=agent-server --prod /prod/agent-server
+RUN cp -r packages/server/.prisma /prod/agent-server/
+RUN cp -r packages/server/.keystone /prod/agent-server/
+RUN cp -r packages/server/migrations /prod/agent-server/
 
 # Runtime stage
 FROM base AS agent-server
