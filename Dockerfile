@@ -1,7 +1,7 @@
 ARG BASEIMAGE=node:22-alpine
 FROM ${BASEIMAGE} AS base
-RUN apk update && apk upgrade \
-    apk add --no-cache openssl \
+RUN apk update && apk upgrade && \
+    apk add --no-cache openssl && \
     rm -rf /var/cache/apk/*
 RUN npm install -g pnpm
 
